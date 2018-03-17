@@ -19,6 +19,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -26,6 +27,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 import adapter.JPController;
 import adapter.JPViewStates;
@@ -38,20 +40,21 @@ public class JPViewRecords extends JPanel
 	private GridBagLayout layout;
 	private JLabel header;
 	private JButton backButton;
-	private JTable studentRecordsSet;
+	private JTable dataSet;
+	private JScrollPane scrollPane;
 	
 	public JPViewRecords(JPController base)
 	{
 		this.base = base;
 		layout = new GridBagLayout();
 		backButton = new JButton(" BACK ");
-		studentRecordsSet = new JTable();
+		dataSet = new JTable();
 
 		if(JPSQLiteData.hasData)
 		{
 			ResultSet res = base.getData();
 			try 
-			{	studentRecordsSet = new JTable(buildTableModel(res));	}
+			{	dataSet = new JTable(buildTableModel(res));	}
 			catch (SQLException e) { e.printStackTrace(); }
 		}
 		removeAll();
@@ -84,19 +87,28 @@ public class JPViewRecords extends JPanel
 		gbc_backButton.gridx = 0;
 		gbc_backButton.gridy = 0;		
 		
-		studentRecordsSet.setForeground(new Color(176, 224, 230));
-		studentRecordsSet.setFont(new Font("Arial", Font.PLAIN, 20));
-		studentRecordsSet.setBorder(new LineBorder(new Color(70, 130, 180), 2));
-		studentRecordsSet.setBackground(new Color(0, 0, 0));
-		GridBagConstraints gbc_studentRecordsSet = new GridBagConstraints();
-		gbc_studentRecordsSet.gridwidth = 5;
-		gbc_studentRecordsSet.gridy = 4;
-		gbc_studentRecordsSet.insets = new Insets(0, 20, 20, 20);
-		gbc_studentRecordsSet.fill = GridBagConstraints.BOTH;
-		gbc_studentRecordsSet.gridx = 0;
+		dataSet.setForeground(new Color(176, 224, 230));
+		dataSet.setFont(new Font("Arial", Font.PLAIN, 20));
+		dataSet.setBackground(new Color(0, 0, 0));
+		JTableHeader header = dataSet.getTableHeader();
+		header.setForeground(new Color(176, 224, 230));
+		header.setFont(new Font("Arial", Font.PLAIN, 25));
+		header.setBackground(new Color(0, 0, 0));
+		header.setBorder(new LineBorder(Color.WHITE));
+		scrollPane = new JScrollPane(dataSet);
+		scrollPane.getViewport().setForeground(new Color(176, 224, 230));
+		scrollPane.getViewport().setFont(new Font("Arial", Font.PLAIN, 20));
+		scrollPane.getViewport().setBackground(new Color(0, 0, 0));
+		scrollPane.setBorder(new LineBorder(new Color(70, 130, 180), 2));
+		GridBagConstraints gbc_dataSet = new GridBagConstraints();
+		gbc_dataSet.gridwidth = 5;
+		gbc_dataSet.gridy = 4;
+		gbc_dataSet.insets = new Insets(0, 20, 20, 20);
+		gbc_dataSet.fill = GridBagConstraints.BOTH;
+		gbc_dataSet.gridx = 0;
 		
 		add(backButton, gbc_backButton);
-		add(studentRecordsSet, gbc_studentRecordsSet);
+		add(scrollPane, gbc_dataSet);
 	}
 	
 	private void setUpListeners() 
