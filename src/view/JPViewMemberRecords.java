@@ -12,38 +12,27 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Vector;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-
 import adapter.JPController;
 import adapter.JPViewStates;
 import model.JPSQLiteData;
 
-public class JPViewRecords extends JPanel 
+public class JPViewMemberRecords extends JPanel 
 {
 	private static final long serialVersionUID = -7386656563185975615L;
 	private JPController base;
 	private GridBagLayout layout;
-	private JLabel header;
 	private JButton backButton;
 	private JTable dataSet;
 	private JScrollPane scrollPane;
 	
-	public JPViewRecords(JPController base)
+	public JPViewMemberRecords(JPController base)
 	{
 		this.base = base;
 		layout = new GridBagLayout();
@@ -52,9 +41,9 @@ public class JPViewRecords extends JPanel
 
 		if(JPSQLiteData.hasData)
 		{
-			ResultSet res = base.getData();
+			ResultSet res = base.getMemberData();
 			try 
-			{	dataSet = new JTable(buildTableModel(res));	}
+			{	dataSet = new JTable(JPController.buildTableModel(res));	}
 			catch (SQLException e) { e.printStackTrace(); }
 		}
 		removeAll();
@@ -75,7 +64,7 @@ public class JPViewRecords extends JPanel
 		setForeground(new Color(0, 255, 255));
 		setBackground(new Color(0, 0, 0));
 		
-		backButton.setFont(new Font("MV Boli", Font.PLAIN, 25));
+		backButton.setFont(new Font("MV Boli", Font.PLAIN, 20));
 		backButton.setForeground(new Color(135, 206, 250));
 		backButton.setBackground(new Color(0, 0, 0));
 		backButton.setFocusPainted(false);
@@ -88,13 +77,13 @@ public class JPViewRecords extends JPanel
 		gbc_backButton.gridy = 0;		
 		
 		dataSet.setForeground(new Color(176, 224, 230));
-		dataSet.setFont(new Font("Arial", Font.PLAIN, 20));
+		dataSet.setFont(new Font("Arial", Font.PLAIN, 15));
 		dataSet.setBackground(new Color(0, 0, 0));
 		JTableHeader header = dataSet.getTableHeader();
 		header.setForeground(new Color(176, 224, 230));
-		header.setFont(new Font("Arial", Font.PLAIN, 25));
+		header.setFont(new Font("Arial", Font.PLAIN, 20));
 		header.setBackground(new Color(0, 0, 0));
-		header.setBorder(new LineBorder(Color.WHITE));
+		header.setBorder(new LineBorder(Color.LIGHT_GRAY));
 		scrollPane = new JScrollPane(dataSet);
 		scrollPane.getViewport().setForeground(new Color(176, 224, 230));
 		scrollPane.getViewport().setFont(new Font("Arial", Font.PLAIN, 20));
@@ -116,30 +105,7 @@ public class JPViewRecords extends JPanel
 		backButton.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick)
-			{	base.changeState(JPViewStates.def);	}
+			{	base.changeState(JPViewStates.DEFAULT);	}
 		});
-	}
-	
-	private static DefaultTableModel buildTableModel(ResultSet studentRecords) throws SQLException 
-	{
-		ResultSetMetaData metaData = studentRecords.getMetaData();
-
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) 
-	    {	columnNames.add(metaData.getColumnName(column));	}
-
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-	    while (studentRecords.next()) 
-	    {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) 
-	        {
-	            vector.add(studentRecords.getObject(columnIndex));
-	            //System.out.println(studentRecords.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
-	    return new DefaultTableModel(data, columnNames);
 	}
 }

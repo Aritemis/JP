@@ -6,6 +6,7 @@ package model;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,6 +14,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.swing.JTable;
+import javax.swing.table.TableModel;
+
 import adapter.JPController;
 
 public class JPSQLiteData
@@ -44,48 +49,10 @@ public class JPSQLiteData
 		return res;
 	}
 	
-	public ResultSet compareLogin(String userName, String pass)
+	public int importMembers(File csvFile)
 	{
-		ResultSet res = null;
-		try
-		{
-			if (con == null)
-			{	getConnection();	}
-			String query = "SELECT ID FROM USER WHERE userName = ? AND pass = ?";
-			PreparedStatement preparedStatement = con.prepareStatement(query);
-			preparedStatement.setString(1, userName);
-			preparedStatement.setString(2, pass);
-			res = preparedStatement.executeQuery();
-		}
-		catch (SQLException e){}
-		return res;
-	}
-	
-	public ResultSet getUserInfo(int id)
-	{
-		ResultSet res = null;
-		PreparedStatement preparedStatement;
-		if (con == null)
-		{	getConnection();	}
-		try 
-		{
-			String query = "SELECT firstName, lastName, permission, classID FROM USER WHERE ID = ?";
-			preparedStatement = con.prepareStatement(query);
-			preparedStatement.setInt(1, id);
-			res = preparedStatement.executeQuery();
-		}		
-		catch (SQLException e){e.printStackTrace();}
-		return res;
-	}
-	
-	public int importUsers(File csvFile)
-	{
-		//CSV file should have user ID, first name, last name, class ID, permission level, new line.
-		//Username default - first letter of first name, first letter of last name, last 3 digits of user ID 
-		//Password default - user ID
-		
-		//Username default subject to change.
-		//Duplicate users are ignored.
+		//lastName, firstName, SCAName, membershipNumber, expirationDate, isAnAdult
+
         BufferedReader br = null;
         String line = "";
         String delimiter = ",";
@@ -97,32 +64,36 @@ public class JPSQLiteData
                 while ((line = br.readLine()) != null) 
                 {
                 	currentLine++;
-                	//TODO catch invalid input
                     String[] values = line.split(delimiter);
-                    String idString = values[0].trim();
-                    String firstName = values[1].trim();
-                    String lastName = values[2].trim();
-                    String classID = values[3].trim();
-                    String userName = firstName.substring(0, 1) 
-                    				+ lastName.substring(0, 1) 
-                    				+ idString.substring(idString.length() - 4);
-                    System.out.println(userName);
-                    int id = Integer.parseInt(idString);
-                    if(userExists(id))
+                    try
                     {
-                    	System.out.println("User with ID " + idString + " already exists.");
+                        String firstName = values[0].trim();
+                        String lastName = values[1].trim();
+                        String SCAName = values[2].trim();
+                        int membershipNumber = Integer.parseInt(values[3]);
+                        String expirationDate = values[4].trim();
+                        boolean isAnAdult = Boolean.getBoolean(values[5]);
+                        if(userExists(membershipNumber))
+                        {
+                			String statement = "DELETE FROM MEMBERDATA WHERE membershipNumber = ?";
+                			PreparedStatement preparedStatement = con.prepareStatement(statement);
+                			preparedStatement.setInt(1, membershipNumber);
+                			preparedStatement.executeUpdate();
+                			System.out.println("Updated user " + membershipNumber + ".");
+                        }
+                        addMember(firstName, lastName, SCAName, membershipNumber, expirationDate, isAnAdult);
                     }
-                    else
-                    {
-                    	addUser(id, userName, idString, firstName, lastName, classID, Integer.parseInt(values[4].trim()));
-                    }
+                    catch(NumberFormatException e){	}
+                    /*
+                     *  Skips the line if this happens because it is almost certainly a header.
+                     *  
+                     *  If this program were to be used by more than one computer literate person I would have more 
+                     *  checks, but that isn't the case so I won't worry about it unless I have some down time later.
+                     */
                 }
                 currentLine = -1;
             } 
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-            } 
+            catch (IOException | SQLException e){	e.printStackTrace();	} 
             finally 
             {
                 if (br != null) 
@@ -135,6 +106,36 @@ public class JPSQLiteData
             }
         return currentLine;
     }
+	
+	public boolean exportMembers(JTable tableToExport, File newFile)
+	{
+		boolean result = true;
+		try {
+
+	        TableModel model = tableToExport.getModel();
+	        FileWriter csv = new FileWriter(newFile);
+	        String fileContent = new String("");
+
+	        for (int i = 0; i < model.getColumnCount(); i++) 
+	        {	fileContent = fileContent + JPController.memberDataTableHeader[i] + ",";	}
+	        fileContent = fileContent + "\n";
+
+	        for (int i = 0; i < model.getRowCount(); i++) 
+	        {
+	            for (int j = 0; j < model.getColumnCount(); j++) 
+	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
+	            fileContent = fileContent + "\n";
+	        }
+	        csv.write(fileContent);
+	        csv.close();
+	    } 
+		catch (IOException e) 
+		{
+	        e.printStackTrace();
+	        result = false;
+	    }
+		return result;
+	}
 	
 	public void clearData()
 	{
@@ -149,7 +150,7 @@ public class JPSQLiteData
 		catch (SQLException e) {	e.printStackTrace();	}
 	}
 	
-	public ResultSet getData()
+	public ResultSet getMemberData()
 	{
 		ResultSet res = null;
 		PreparedStatement preparedStatement;
@@ -157,7 +158,23 @@ public class JPSQLiteData
 		{	getConnection();	}
 		try 
 		{
-			String query = "SELECT * FROM USER";
+			String query = "SELECT * FROM MEMBERDATA ORDER BY lastName";
+			preparedStatement = con.prepareStatement(query);
+			res = preparedStatement.executeQuery();
+		}		
+		catch (SQLException e){e.printStackTrace();}
+		return res;
+	}
+	
+	public ResultSet getAttendanceData()
+	{
+		ResultSet res = null;
+		PreparedStatement preparedStatement;
+		if (con == null)
+		{	getConnection();	}
+		try 
+		{
+			String query = "SELECT * FROM ATTENDANCEDATA ORDER BY lastName";
 			preparedStatement = con.prepareStatement(query);
 			res = preparedStatement.executeQuery();
 		}		
@@ -165,29 +182,26 @@ public class JPSQLiteData
 		return res;
 	}
 
-	private void addUser(int id, String userName, String pass, String firstName, String lastName, String classID, int permissions)
+	public void addMember(String firstName, String lastName, String SCAName, int membershipNumber, String expirationDate, boolean isAnAdult)
 	{
 		if (con == null)
 		{	getConnection();	}
 		try 
 		{
 			PreparedStatement preparedStatement;
-			preparedStatement = con.prepareStatement("INSERT INTO USER VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-			preparedStatement.setInt(1, id);
-			preparedStatement.setString(2, userName);
-			preparedStatement.setString(3, pass);
-			preparedStatement.setString(4, firstName);
-			preparedStatement.setString(5, lastName);
-			preparedStatement.setString(6, classID);
-			preparedStatement.setInt(7, permissions);
-			preparedStatement.setInt(8, 0);
-			preparedStatement.setBoolean(9, false);
+			preparedStatement = con.prepareStatement("INSERT INTO MEMBERS VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			preparedStatement.setString(1, firstName);
+			preparedStatement.setString(2, lastName);
+			preparedStatement.setString(3, SCAName);
+			preparedStatement.setInt(4, membershipNumber);
+			preparedStatement.setString(5, expirationDate);
+			preparedStatement.setBoolean(6, isAnAdult);
 			preparedStatement.execute();
 		} 
 		catch (SQLException e) {e.printStackTrace();}
 	}
 	
-	private boolean userExists(int ID)
+	private boolean userExists(int membershipNumber)
 	{
 		boolean result = false;
 		ResultSet res = null;
@@ -195,9 +209,9 @@ public class JPSQLiteData
 		{
 			if (con == null)
 			{	getConnection();	}
-			String query = "SELECT ID FROM USER WHERE ID = ?";
+			String query = "SELECT membershipNumber FROM MEMBERDATA WHERE membershipNumber = ?";
 			PreparedStatement preparedStatement = con.prepareStatement(query);
-			preparedStatement.setInt(1, ID);
+			preparedStatement.setInt(1, membershipNumber);
 			res = preparedStatement.executeQuery();
 			result = res.next();
 		}
@@ -210,9 +224,7 @@ public class JPSQLiteData
 		try
 		{
 			Class.forName("org.sqlite.JDBC");
-			//database path
-			//if there is no database there a new one will be created
-			String databaseFilePath = "jdbc:sqlite:C:/ProgramData/MPDKWID";
+			String databaseFilePath = "jdbc:sqlite:C:/ProgramData/JProject";
 			con = DriverManager.getConnection(databaseFilePath);
 		}
 		catch (SQLException | ClassNotFoundException e)
@@ -222,13 +234,13 @@ public class JPSQLiteData
 			{
 				Class.forName("org.sqlite.JDBC");
 				File homedir = new File(System.getProperty("user.home"));
-				String databaseFilePath = "jdbc:sqlite:" + homedir + "/MPDKWID";
+				String databaseFilePath = "jdbc:sqlite:" + homedir + "/JProject";
 				con = DriverManager.getConnection(databaseFilePath);
 			}
 			catch (SQLException | ClassNotFoundException e2)
 			{
 				e2.printStackTrace();
-				System.out.println("linux fix didn't work");
+				System.out.println("This only works for PC and Linux.");
 			}
 		}
 		initial();
@@ -244,23 +256,19 @@ public class JPSQLiteData
 			{
 				state = con.createStatement();
 				
-				// drop table if exists
-				//Commented out for demo
-				//state.execute("DROP TABLE IF EXISTS USER;");
-				
-				ResultSet res = state.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='USER'");
+				ResultSet res = state.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='MEMBERDATA'");
 				if (!res.next())
 				{
-					System.out.println("Building the User table.");
 					state = con.createStatement();
-					state.executeUpdate("CREATE TABLE USER(ID INTEGER," + "userName VARCHAR(15)," + "pass VARCHAR(15),"
-							+ "firstName VARCHAR(30)," + "lastName VARCHAR(30)," + "classID VARCHAR(5),"
-							+ "permission INTEGER," + "failedAttempts INTEGER," + "isLocked BOOLEAN,"
-							+ "PRIMARY KEY (ID));");
+					state.executeUpdate("CREATE TABLE MEMBERDATA(lastName VARCHAR(20)," + "firstName VARCHAR(20)," 
+							+ "SCAName VARCHAR(20)," + "membershipNumber INTEGER," + "expirationDate VARCHAR(10)," 
+							+ "isAnAdult BOOLEAN,"
+							+ "PRIMARY KEY (membershipNumber));");
 					
-					//addUser(000000, "root", "root", "Root", "User", "00", 0);
-					//addUser(111111, "deft", "deft", "Default", "Teacher", "1A", 2);
-					//addUser(222222, "defs", "defs", "Default", "Student", "1A", 3);
+					state.executeUpdate("CREATE TABLE ATTENDANCEDATA(lastName VARCHAR(20)," + "firstName VARCHAR(20)," 
+							+ "isAnAdult BOOLEAN," + "isMember BOOLEAN," + "hadFeast BOOLEAN," 
+							+ "PRIMARY KEY (lastName, firstName));");
+					
 				}
 			}
 			catch (SQLException e){ e.printStackTrace(); }

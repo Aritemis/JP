@@ -24,7 +24,7 @@ public class Frame extends JFrame
 		this.base = base;
 		def = new Default(base);
 		panel = def;
-		minSize = new Dimension(900, 570);
+		minSize = new Dimension(950, 600);
 		setExtendedState(JFrame.MAXIMIZED_BOTH); 
 		//setUndecorated(true);
 		setMinimumSize(minSize);
@@ -35,19 +35,25 @@ public class Frame extends JFrame
 		DIMENSIONS = minSize;
 	}
 	
-	
-	public void updateState()
+	public void updateState(JPViewStates state)
 	{
-		JPViewStates state = base.getState();
-		switch (state)
+		switch(state)
 		{
-			case def:
+			case DEFAULT:
 				panel.removeAll();
 				panel = new Default(base);
 				break;
-			case viewRecords:
+			case VIEWMEMBERDATA:
 				panel.removeAll();
-				panel = new JPViewRecords(base);
+				panel = new JPViewMemberRecords(base);
+				break;
+			case VIEWATTENDANCEDATA:
+				panel.removeAll();
+				panel = new JPViewAttendanceRecords(base);
+				break;
+			default:
+				panel.removeAll();
+				panel = new Default(base);
 				break;
 		}	
 		setContentPane(panel);
