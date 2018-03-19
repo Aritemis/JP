@@ -72,7 +72,7 @@ public class JPSQLiteData
                         String SCAName = values[2].trim();
                         int membershipNumber = Integer.parseInt(values[3]);
                         String expirationDate = values[4].trim();
-                        boolean isAnAdult = Boolean.getBoolean(values[5]);
+                        boolean isAnAdult = Boolean.parseBoolean(values[5].trim());
                         if(userExists(membershipNumber))
                         {
                 			String statement = "DELETE FROM MEMBERDATA WHERE membershipNumber = ?";
@@ -137,15 +137,14 @@ public class JPSQLiteData
 		return result;
 	}
 	
-	public void clearData()
+	public void clearMemberData()
 	{
-		Statement temp;
 		try 
 		{
-			temp = con.createStatement();
-			temp.execute("DROP TABLE IF EXISTS USER;");
-			initial();
-			hasData = false;
+			String statement = "DELETE FROM MEMBERDATA WHERE ?";
+			PreparedStatement preparedStatement = con.prepareStatement(statement);
+			preparedStatement.setBoolean(1, true);
+			preparedStatement.executeUpdate();
 		}
 		catch (SQLException e) {	e.printStackTrace();	}
 	}
@@ -164,6 +163,48 @@ public class JPSQLiteData
 		}		
 		catch (SQLException e){e.printStackTrace();}
 		return res;
+	}
+	
+	public boolean exportAttendanceData(JTable tableToExport, File newFile)
+	{
+		boolean result = true;
+		try {
+
+	        TableModel model = tableToExport.getModel();
+	        FileWriter csv = new FileWriter(newFile);
+	        String fileContent = new String("");
+
+	        for (int i = 0; i < model.getColumnCount(); i++) 
+	        {	fileContent = fileContent + JPController.attendanceDataTableHeader[i] + ",";	}
+	        fileContent = fileContent + "\n";
+
+	        for (int i = 0; i < model.getRowCount(); i++) 
+	        {
+	            for (int j = 0; j < model.getColumnCount(); j++) 
+	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
+	            fileContent = fileContent + "\n";
+	        }
+	        csv.write(fileContent);
+	        csv.close();
+	    } 
+		catch (IOException e) 
+		{
+	        e.printStackTrace();
+	        result = false;
+	    }
+		return result;
+	}
+	
+	public void clearAttendanceData()
+	{
+		try 
+		{
+			String statement = "DELETE FROM ATTENDANCEDATA WHERE ?";
+			PreparedStatement preparedStatement = con.prepareStatement(statement);
+			preparedStatement.setBoolean(1, true);
+			preparedStatement.executeUpdate();
+		}
+		catch (SQLException e) {	e.printStackTrace();	}
 	}
 	
 	public ResultSet getAttendanceData()
@@ -189,7 +230,7 @@ public class JPSQLiteData
 		try 
 		{
 			PreparedStatement preparedStatement;
-			preparedStatement = con.prepareStatement("INSERT INTO MEMBERS VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+			preparedStatement = con.prepareStatement("INSERT INTO MEMBERDATA VALUES( ?, ?, ?, ?, ?, ?);");
 			preparedStatement.setString(1, firstName);
 			preparedStatement.setString(2, lastName);
 			preparedStatement.setString(3, SCAName);

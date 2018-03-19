@@ -54,26 +54,32 @@ public class JPController
 	{
 		boolean result = database.exportMembers(table, file);	
 		if(result)
-		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully imported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
 		else
 		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
 	}
 	
-	public void clearData()
-	{
-		database.clearData();
-	}
+	public void clearMemberData()
+	{	database.clearMemberData();	}
 	
 	public ResultSet getMemberData()
-	{
-		return database.getMemberData();
-	}
+	{	return database.getMemberData();	}
+	
+	public void clearAttendaceData()
+	{	database.clearAttendanceData();	}
 	
 	public ResultSet getAttendanceData()
-	{
-		return database.getAttendanceData();
-	}
+	{	return database.getAttendanceData();	}
 		
+	public void exportAttendaceData(JTable table, File file)
+	{
+		boolean result = database.exportAttendanceData(table, file);
+		if(result)
+		{	JOptionPane.showMessageDialog(errorPanel, "Attendace data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		else
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+	}
+	
 	public static DefaultTableModel buildTableModel(ResultSet memberRecords) throws SQLException 
 	{
 		ResultSetMetaData metaData = memberRecords.getMetaData();

@@ -38,6 +38,7 @@ public class JPViewAttendanceRecords extends JPanel
 		layout = new GridBagLayout();
 		backButton = new JButton(" BACK ");
 		dataSet = new JTable();
+		dataSet.setRowSelectionAllowed(false);
 
 		if(JPSQLiteData.hasData)
 		{
@@ -60,35 +61,36 @@ public class JPViewAttendanceRecords extends JPanel
 		layout.columnWidths = new int[]{0, 0, 0};
 		layout.columnWeights = new double[]{0.0, 1.0, 1.0};
 		setLayout(layout);
-		setBorder(new LineBorder(new Color(70, 130, 180), 10));
+		setBorder(new LineBorder(new Color(0, 128, 0), 10));
 		setForeground(new Color(0, 255, 255));
-		setBackground(new Color(0, 0, 0));
+		setBackground(new Color(255, 255, 255));
 		
-		backButton.setFont(new Font("MV Boli", Font.PLAIN, 20));
-		backButton.setForeground(new Color(135, 206, 250));
+		backButton.setFont(new Font("Arial", Font.PLAIN, 20));
+		backButton.setForeground(new Color(46, 139, 87));
 		backButton.setBackground(new Color(0, 0, 0));
 		backButton.setFocusPainted(false);
 		backButton.setContentAreaFilled(false);
-		backButton.setBorder(new LineBorder(new Color(70, 130, 180), 2));
+		backButton.setBorder(new LineBorder(new Color(0, 100, 0), 2));
 		GridBagConstraints gbc_backButton = new GridBagConstraints();
 		gbc_backButton.anchor = GridBagConstraints.NORTHWEST;
 		gbc_backButton.insets = new Insets(20, 20, 5, 5);
 		gbc_backButton.gridx = 0;
 		gbc_backButton.gridy = 0;		
 		
-		dataSet.setForeground(new Color(176, 224, 230));
-		dataSet.setFont(new Font("Arial", Font.PLAIN, 15));
-		dataSet.setBackground(new Color(0, 0, 0));
+		dataSet.setForeground(Color.BLACK);
+		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 18));
+		dataSet.setBackground(Color.WHITE);
 		JTableHeader header = dataSet.getTableHeader();
-		header.setForeground(new Color(176, 224, 230));
+		header.setForeground(new Color(46, 139, 87));
 		header.setFont(new Font("Arial", Font.PLAIN, 20));
-		header.setBackground(new Color(0, 0, 0));
+		header.setBackground(Color.WHITE);
 		header.setBorder(new LineBorder(Color.LIGHT_GRAY));
 		scrollPane = new JScrollPane(dataSet);
-		scrollPane.getViewport().setForeground(new Color(176, 224, 230));
+		scrollPane.setViewportBorder(new LineBorder(new Color(0, 100, 0)));
+		scrollPane.getViewport().setForeground(Color.BLACK);
 		scrollPane.getViewport().setFont(new Font("Arial", Font.PLAIN, 20));
-		scrollPane.getViewport().setBackground(new Color(0, 0, 0));
-		scrollPane.setBorder(new LineBorder(new Color(70, 130, 180), 2));
+		scrollPane.getViewport().setBackground(Color.WHITE);
+		scrollPane.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		GridBagConstraints gbc_dataSet = new GridBagConstraints();
 		gbc_dataSet.gridwidth = 5;
 		gbc_dataSet.gridy = 4;

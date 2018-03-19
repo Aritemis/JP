@@ -75,17 +75,17 @@ public class Default extends JPanel
 		layout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
 		layout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		setLayout(layout);
-		setBorder(new LineBorder(new Color(128, 128, 128), 10));
+		setBorder(new LineBorder(new Color(0, 100, 0), 10));
 		setForeground(new Color(105, 105, 105));
-		setBackground(new Color(0, 0, 0));
+		setBackground(new Color(255, 255, 255));
 		
 		
 		clearAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
-		clearAttendanceData.setForeground(Color.LIGHT_GRAY);
+		clearAttendanceData.setForeground(new Color(0, 128, 0));
 		clearAttendanceData.setBackground(new Color(105, 105, 105));
 		clearAttendanceData.setFocusPainted(false);
 		clearAttendanceData.setContentAreaFilled(false);
-		clearAttendanceData.setBorder(new LineBorder(Color.GRAY, 2));
+		clearAttendanceData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		clearAttendanceData.setToolTipText("Clears all data from the table containing attendance records.");
 		GridBagConstraints gbc_clearAttendanceData = new GridBagConstraints();
 		gbc_clearAttendanceData.fill = GridBagConstraints.HORIZONTAL;
@@ -96,11 +96,11 @@ public class Default extends JPanel
 		gbc_clearAttendanceData.gridy = 1;
 		
 		viewAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
-		viewAttendanceData.setForeground(Color.LIGHT_GRAY);
+		viewAttendanceData.setForeground(new Color(0, 128, 0));
 		viewAttendanceData.setBackground(new Color(105, 105, 105));
 		viewAttendanceData.setFocusPainted(false);
 		viewAttendanceData.setContentAreaFilled(false);
-		viewAttendanceData.setBorder(new LineBorder(Color.GRAY, 2));
+		viewAttendanceData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		viewAttendanceData.setToolTipText("View and search all event attendance data.");
 		GridBagConstraints gbc_viewAttendanceData = new GridBagConstraints();
 		gbc_viewAttendanceData.fill = GridBagConstraints.HORIZONTAL;
@@ -110,11 +110,11 @@ public class Default extends JPanel
 		gbc_viewAttendanceData.gridy = 1;
 		
 		exportAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
-		exportAttendanceData.setForeground(Color.LIGHT_GRAY);
+		exportAttendanceData.setForeground(new Color(0, 128, 0));
 		exportAttendanceData.setBackground(new Color(105, 105, 105));
 		exportAttendanceData.setFocusPainted(false);
 		exportAttendanceData.setContentAreaFilled(false);
-		exportAttendanceData.setBorder(new LineBorder(Color.GRAY, 2));
+		exportAttendanceData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		exportAttendanceData.setToolTipText("Export all membership records in the database as a CSV file.");
 		GridBagConstraints gbc_exportAttendanceData = new GridBagConstraints();
 		gbc_exportAttendanceData.gridwidth = 2;
@@ -126,7 +126,7 @@ public class Default extends JPanel
 		
 		
 		
-		label.setForeground(new Color(135, 206, 235));
+		label.setForeground(new Color(107, 142, 35));
 		label.setFont(new Font("Arial", Font.PLAIN, 20));
 		GridBagConstraints gbc_label = new GridBagConstraints();
 		gbc_label.anchor = GridBagConstraints.WEST;
@@ -136,9 +136,9 @@ public class Default extends JPanel
 		
 		textField.setFont(new Font("Arial", Font.PLAIN, 20));
 		textField.setForeground(new Color(173, 216, 230));
-		textField.setBackground(new Color(0, 0, 0));
+		textField.setBackground(new Color(255, 255, 255));
 		textField.setToolTipText("Username");
-		textField.setBorder(new CompoundBorder(new LineBorder(new Color(30, 144, 255)), new EmptyBorder(0, 10, 0, 0)));
+		textField.setBorder(new CompoundBorder(new LineBorder(new Color(46, 139, 87)), new EmptyBorder(0, 10, 0, 0)));
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.insets = new Insets(0, 10, 5, 10);
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
@@ -148,11 +148,11 @@ public class Default extends JPanel
 		
 		
 		updateButton.setFont(new Font("Arial", Font.PLAIN, 20));
-		updateButton.setForeground(Color.LIGHT_GRAY);
+		updateButton.setForeground(new Color(0, 128, 0));
 		updateButton.setBackground(new Color(105, 105, 105));
 		updateButton.setFocusPainted(false);
 		updateButton.setContentAreaFilled(false);
-		updateButton.setBorder(new LineBorder(Color.GRAY, 2, true));
+		updateButton.setBorder(new LineBorder(new Color(0, 128, 0), 2, true));
 		GridBagConstraints gbc_updateButton = new GridBagConstraints();
 		gbc_updateButton.gridwidth = 6;
 		gbc_updateButton.anchor = GridBagConstraints.EAST;
@@ -160,9 +160,9 @@ public class Default extends JPanel
 		gbc_updateButton.gridx = 2;
 		gbc_updateButton.gridy = 8;
 		
-		comboBox.setForeground(Color.WHITE);
-		comboBox.setBackground(Color.BLACK);
-		comboBox.setEditable(true);
+		comboBox.setForeground(new Color(0, 128, 0));
+		comboBox.setBackground(new Color(255, 255, 255));
+	
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
 		gbc_comboBox.gridwidth = 4;
 		gbc_comboBox.anchor = GridBagConstraints.WEST;
@@ -173,11 +173,11 @@ public class Default extends JPanel
 		
 		
 		clearMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		clearMemberData.setForeground(Color.LIGHT_GRAY);
-		clearMemberData.setBackground(new Color(105, 105, 105));
+		clearMemberData.setForeground(new Color(0, 128, 0));
+		clearMemberData.setBackground(new Color(255, 255, 255));
 		clearMemberData.setFocusPainted(false);
 		clearMemberData.setContentAreaFilled(false);
-		clearMemberData.setBorder(new LineBorder(Color.GRAY, 2));
+		clearMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		clearMemberData.setToolTipText("Clears all data from the table containing membership records.");
 		GridBagConstraints gbc_clearMemberData = new GridBagConstraints();
 		gbc_clearMemberData.gridwidth = 2;
@@ -189,11 +189,11 @@ public class Default extends JPanel
 		exportMemberData = new JButton(" EXPORT MEMBER DATA ");
 		
 		exportMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		exportMemberData.setForeground(Color.LIGHT_GRAY);
+		exportMemberData.setForeground(new Color(0, 128, 0));
 		exportMemberData.setBackground(new Color(105, 105, 105));
 		exportMemberData.setFocusPainted(false);
 		exportMemberData.setContentAreaFilled(false);
-		exportMemberData.setBorder(new LineBorder(Color.GRAY, 2));
+		exportMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		exportMemberData.setToolTipText("Export all membership records in the database as a CSV file.");
 		GridBagConstraints gbc_exportMemberData = new GridBagConstraints();
 		gbc_exportMemberData.gridwidth = 2;
@@ -205,11 +205,11 @@ public class Default extends JPanel
 		viewMemberData = new JButton(" VIEW MEMBERS ");
 		
 		viewMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		viewMemberData.setForeground(Color.LIGHT_GRAY);
+		viewMemberData.setForeground(new Color(0, 128, 0));
 		viewMemberData.setBackground(new Color(105, 105, 105));
 		viewMemberData.setFocusPainted(false);
 		viewMemberData.setContentAreaFilled(false);
-		viewMemberData.setBorder(new LineBorder(Color.GRAY, 2));
+		viewMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		viewMemberData.setToolTipText("View and search all records in the member table.");
 		GridBagConstraints gbc_viewMemberData = new GridBagConstraints();
 		gbc_viewMemberData.fill = GridBagConstraints.HORIZONTAL;
@@ -221,11 +221,11 @@ public class Default extends JPanel
 		importMembers = new JButton(" IMPORT MEMBERS ");
 		
 		importMembers.setFont(new Font("Arial", Font.PLAIN, 18));
-		importMembers.setForeground(Color.LIGHT_GRAY);
+		importMembers.setForeground(new Color(0, 128, 0));
 		importMembers.setBackground(new Color(105, 105, 105));
 		importMembers.setFocusPainted(false);
 		importMembers.setContentAreaFilled(false);
-		importMembers.setBorder(new LineBorder(Color.GRAY, 2));
+		importMembers.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		importMembers.setToolTipText("Import member data via CSV file. Importing an already existing member will update their information.");
 		GridBagConstraints gbc_importMembers = new GridBagConstraints();
 		gbc_importMembers.anchor = GridBagConstraints.NORTHWEST;
@@ -254,7 +254,7 @@ public class Default extends JPanel
 			    {
 			        @Override
 			        public boolean accept(File f) 
-			        {	return f.getName().endsWith(".csv");	}
+			        {	return f.getName().endsWith(".csv") || f.getName().endsWith(".txt");	}
 			        @Override
 			        public String getDescription() 
 			        {	return "CSV files";	}
@@ -274,18 +274,14 @@ public class Default extends JPanel
 				JPanel temp = new JPanel();
 				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all member data from the database?");
 				if(valueReturned == JOptionPane.OK_OPTION)
-				{
-					base.clearData();
-				}
+				{	base.clearMemberData();	}
 			}
 		});
 		
 		viewMemberData.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick) 
-			{
-				base.changeState(JPViewStates.VIEWMEMBERDATA);
-			}
+			{	base.changeState(JPViewStates.VIEWMEMBERDATA);	}
 		});
 		
 		exportMemberData.addActionListener(new ActionListener()
@@ -312,6 +308,53 @@ public class Default extends JPanel
 					try 
 					{	dataSet = new JTable(JPController.buildTableModel(res));	}
 					catch (SQLException e) { e.printStackTrace(); }
+					base.exportMembers(dataSet, fileChoose.getSelectedFile());
+				}
+			}
+		});
+		
+		clearAttendanceData.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent onClick) 
+			{
+				JPanel temp = new JPanel();
+				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all member data from the database?");
+				if(valueReturned == JOptionPane.OK_OPTION)
+				{	base.clearAttendaceData();	}
+			}
+		});
+		
+		viewAttendanceData.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent onClick) 
+			{	base.changeState(JPViewStates.VIEWATTENDANCEDATA);	}
+		});
+		
+		exportAttendanceData.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent onClick)
+			{
+				JPanel temp = new JPanel();
+			    fileChoose.setFileFilter(new FileFilter() 
+			    {
+			        @Override
+			        public boolean accept(File f) 
+			        {	return f.getName().endsWith(".csv");	}
+			        @Override
+			        public String getDescription() 
+			        {	return "CSV files";	}
+			    });
+			    File defaultFile = new File("newFile.csv");
+			    fileChoose.setSelectedFile(defaultFile);
+				int valueReturned = fileChoose.showOpenDialog(temp);
+				if(valueReturned == JFileChooser.APPROVE_OPTION)
+				{
+					JTable dataSet = new JTable();
+					ResultSet res = base.getAttendanceData();
+					try 
+					{	dataSet = new JTable(JPController.buildTableModel(res));	}
+					catch (SQLException e) { e.printStackTrace(); }
+					System.out.println(fileChoose.getSelectedFile().getPath());
 					base.exportMembers(dataSet, fileChoose.getSelectedFile());
 				}
 			}
