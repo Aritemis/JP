@@ -21,8 +21,9 @@ import view.Frame;
 public class JPController 
 {
 	public static JPanel errorPanel;
-	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership Number", "Expiration Date", "Is An Adult"};
+	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership #", "Expiration Date", "Is An Adult"};
 	public static String[] attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attended Feast"};
+	public static int dataRequested;
 	private JPSQLiteData database;
 	private Frame frame;
 	private JPViewStates state;
@@ -33,6 +34,7 @@ public class JPController
 		database = new JPSQLiteData(this);
 		frame = new Frame(this);
 		state = JPViewStates.DEFAULT;
+		dataRequested = 0;
 	}
 	
 	public void changeState(JPViewStates nextState)
@@ -87,7 +89,12 @@ public class JPController
 	    Vector<String> columnNames = new Vector<String>();
 	    int columnCount = metaData.getColumnCount();
 	    for (int column = 0; column < columnCount; column++) 
-	    {	columnNames.add(JPController.memberDataTableHeader[column]);	}
+	    {	
+	    	if(dataRequested == 0)
+	    	{	columnNames.add(JPController.memberDataTableHeader[column]);	}
+	    	else
+	    	{	columnNames.add(JPController.attendanceDataTableHeader[column]);	}
+	    }
 
 	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 	    while (memberRecords.next()) 

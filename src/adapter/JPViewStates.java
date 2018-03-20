@@ -6,5 +6,5 @@ package adapter;
 
 public enum JPViewStates 
 {
-	DEFAULT, VIEWMEMBERDATA, VIEWATTENDANCEDATA
+	DEFAULT, VIEWDATA
 }
