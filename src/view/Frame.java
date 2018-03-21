@@ -45,7 +45,7 @@ public class Frame extends JFrame
 				break;
 			case VIEWDATA:
 				panel.removeAll();
-				panel = new JPViewMemberRecords(base);
+				panel = new JPViewRecords(base);
 				break;
 			default:
 				panel.removeAll();

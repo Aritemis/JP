@@ -14,7 +14,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -28,8 +27,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -39,13 +36,11 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
 import adapter.JPController;
 import adapter.JPViewStates;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.SwingConstants;
 
 public class Default extends JPanel
@@ -55,9 +50,6 @@ public class Default extends JPanel
 	private JPController base;
 	private GridBagLayout layout;
 	private JButton importMembers;
-//	private JButton clearMemberData;
-//	private JButton viewMemberData;
-//	private JButton exportMemberData;
 	private JButton clearAttendanceData;
 	private JButton viewAttendanceData;
 	private JButton exportAttendanceData;
@@ -79,7 +71,6 @@ public class Default extends JPanel
 	private JScrollPane scrollPane;
     private TableRowSorter<TableModel> rowSorter;
     private JTextField textField;
-    private JList list;
 	private ListSelectionModel listSelectionModel;
 	private String firstName;
 	private String lastName;
@@ -88,6 +79,7 @@ public class Default extends JPanel
 	private String expirationDate;
 	private boolean isAdult;
 	private boolean hadFeast;
+	private int value;
 	
 	
 	public Default(JPController base)
@@ -95,9 +87,6 @@ public class Default extends JPanel
 		this.base = base;
 		fileChoose = new JFileChooser();
 		layout = new GridBagLayout();
-//		clearMemberData = new JButton(" CLEAR MEMBER DATA ");
-//		exportMemberData = new JButton(" EXPORT MEMBER DATA ");
-//		viewMemberData = new JButton(" VIEW MEMBERS ");
 		importMembers = new JButton(" IMPORT MEMBERS ");
 		clearAttendanceData = new JButton(" CLEAR DATA ");
 		viewAttendanceData = new JButton(" VIEW RECORDS ");
@@ -118,24 +107,37 @@ public class Default extends JPanel
 		adult = new JCheckBox();
 		feast = new JCheckBox();
 		dataSet = new JTable();
+        value = 0;
 
-		ResultSet res = base.getMemberData();
+        resetValues();
+        setUpTable();
+		setUpListeners();
+	}
+	
+	private void setUpTable()
+	{
+		ResultSet res = null;
+		if(value == 0)
+		{	res = base.getMemberData();	}
+		else
+		{	res = base.getAttendanceData();	}
 		
 		try 
-		{	dataSet = new JTable(JPController.buildTableModel(res));	}
+		{	dataSet = new JTable(JPController.buildTableModel(res, value));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
 		dataSet.setRowSorter(rowSorter);
 		textField = new JTextField();
-		list = new JList();
 		listSelectionModel = dataSet.getSelectionModel();
 		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
         dataSet.setSelectionModel(listSelectionModel);
-		
-		setUpLayout();
-		setUpListeners();
+        
+        removeAll();
+        revalidate();
+        repaint();
+        setUpLayout();
 	}
 
 	private void setUpLayout() 
@@ -148,52 +150,7 @@ public class Default extends JPanel
 		setBorder(new LineBorder(new Color(0, 100, 0), 10));
 		setForeground(new Color(105, 105, 105));
 		setBackground(new Color(245, 245, 245));
-/*		
-		clearMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		clearMemberData.setForeground(new Color(0, 128, 0));
-		clearMemberData.setBackground(new Color(255, 255, 255));
-		clearMemberData.setFocusPainted(false);
-		clearMemberData.setContentAreaFilled(false);
-		clearMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
-		clearMemberData.setToolTipText("Clears all data from the table containing membership records.");
-		GridBagConstraints gbc_clearMemberData = new GridBagConstraints();
-		gbc_clearMemberData.fill = GridBagConstraints.HORIZONTAL;
-		gbc_clearMemberData.gridwidth = 2;
-		gbc_clearMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_clearMemberData.insets = new Insets(20, 20, 5, 5);
-		gbc_clearMemberData.gridx = 0;
-		gbc_clearMemberData.gridy = 0;
 		
-		exportMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		exportMemberData.setForeground(new Color(0, 128, 0));
-		exportMemberData.setBackground(new Color(105, 105, 105));
-		exportMemberData.setFocusPainted(false);
-		exportMemberData.setContentAreaFilled(false);
-		exportMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
-		exportMemberData.setToolTipText("Export all membership records in the database as a CSV file.");
-		GridBagConstraints gbc_exportMemberData = new GridBagConstraints();
-		gbc_exportMemberData.fill = GridBagConstraints.HORIZONTAL;
-		gbc_exportMemberData.gridwidth = 2;
-		gbc_exportMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_exportMemberData.insets = new Insets(20, 15, 5, 5);
-		gbc_exportMemberData.gridx = 2;
-		gbc_exportMemberData.gridy = 0;
-
-		viewMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
-		viewMemberData.setForeground(new Color(0, 128, 0));
-		viewMemberData.setBackground(new Color(105, 105, 105));
-		viewMemberData.setFocusPainted(false);
-		viewMemberData.setContentAreaFilled(false);
-		viewMemberData.setBorder(new LineBorder(new Color(0, 128, 0), 2));
-		viewMemberData.setToolTipText("View and search all records in the member table.");
-		GridBagConstraints gbc_viewMemberData = new GridBagConstraints();
-		gbc_viewMemberData.gridwidth = 2;
-		gbc_viewMemberData.fill = GridBagConstraints.HORIZONTAL;
-		gbc_viewMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_viewMemberData.insets = new Insets(20, 15, 5, 5);
-		gbc_viewMemberData.gridx = 4;
-		gbc_viewMemberData.gridy = 0;
-*/		
 		importMembers.setFont(new Font("Arial", Font.PLAIN, 18));
 		importMembers.setForeground(new Color(0, 128, 0));
 		importMembers.setBackground(new Color(105, 105, 105));
@@ -413,9 +370,6 @@ public class Default extends JPanel
 		gbc_dataSet.gridx = 0;
 		
 		
-//		add(clearMemberData, gbc_clearMemberData);
-//		add(exportMemberData, gbc_exportMemberData);
-//		add(viewMemberData, gbc_viewMemberData);		
 		add(importMembers, gbc_importMembers);
 		add(clearAttendanceData, gbc_clearAttendanceData);
 		add(viewAttendanceData, gbc_viewAttendanceData);
@@ -461,53 +415,7 @@ public class Default extends JPanel
 				}
 			}
 		});
-/*		
-		clearMemberData.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent onClick) 
-			{
-				JPanel temp = new JPanel();
-				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all member data from the database?");
-				if(valueReturned == JOptionPane.OK_OPTION)
-				{	base.clearMemberData();	}
-			}
-		});
 		
-		viewMemberData.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent onClick) 
-			{	base.changeState(JPViewStates.VIEWDATA);	}
-		});
-		
-		exportMemberData.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent onClick)
-			{
-				JPanel temp = new JPanel();
-			    fileChoose.setFileFilter(new FileFilter() 
-			    {
-			        @Override
-			        public boolean accept(File f) 
-			        {	return f.getName().endsWith(".csv");	}
-			        @Override
-			        public String getDescription() 
-			        {	return "CSV files";	}
-			    });
-			    File defaultFile = new File("newFile.csv");
-			    fileChoose.setSelectedFile(defaultFile);
-				int valueReturned = fileChoose.showOpenDialog(temp);
-				if(valueReturned == JFileChooser.APPROVE_OPTION)
-				{
-					JTable dataSet = new JTable();
-					ResultSet res = base.getMemberData();
-					try 
-					{	dataSet = new JTable(JPController.buildTableModel(res));	}
-					catch (SQLException e) { e.printStackTrace(); }
-					base.exportMembers(dataSet, fileChoose.getSelectedFile());
-				}
-			}
-		});
-*/		
 		clearAttendanceData.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick) 
@@ -523,7 +431,6 @@ public class Default extends JPanel
 		{
 			public void actionPerformed(ActionEvent onClick) 
 			{	
-				JPController.dataRequested = 1;
 				base.changeState(JPViewStates.VIEWDATA);	
 			}
 		});
@@ -550,10 +457,22 @@ public class Default extends JPanel
 					JTable dataSet = new JTable();
 					ResultSet res = base.getAttendanceData();
 					try 
-					{	dataSet = new JTable(JPController.buildTableModel(res));	}
+					{	dataSet = new JTable(JPController.buildTableModel(res, 1));	}
 					catch (SQLException e) { e.printStackTrace(); }
 					System.out.println(fileChoose.getSelectedFile().getPath());
 					base.exportMembers(dataSet, fileChoose.getSelectedFile());
+				}
+			}
+		});
+		
+		comboBoxA.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				if(value != comboBoxA.getSelectedIndex())
+				{
+					value = comboBoxA.getSelectedIndex();
+					setUpTable();
 				}
 			}
 		});
@@ -582,12 +501,29 @@ public class Default extends JPanel
 
             @Override
             public void changedUpdate(DocumentEvent e) 
-            {
-                throw new UnsupportedOperationException("Not supported."); 
-            }
-
+            {	throw new UnsupportedOperationException("Not supported."); }
         });
-	
+		
+		updateButton.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent onClick)
+			{	
+				assignValues();
+				if(firstName.length() < 1 || lastName.length() < 1){	}
+				
+				switch(value)
+				{
+					case 0:
+						break;
+					case 1:
+						break;
+					case 2:
+						break;
+					default:
+						break;
+				}
+			}
+		});
 	}
 	
 	private void assignValues()
@@ -637,6 +573,17 @@ public class Default extends JPanel
 		else
 		{	isAdult = false;	}
 		updateFields();
+	}
+	
+	private void resetValues()
+	{
+		firstName = "";
+		lastName = "";
+		SCAName = "";
+		membershipNumber = "";
+		expirationDate = "";
+		isAdult = true;
+		hadFeast = false;
 	}
 	
 	private class SharedListSelectionHandler implements ListSelectionListener 

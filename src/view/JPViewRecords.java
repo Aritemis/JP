@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -25,14 +24,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
 import adapter.JPController;
 import adapter.JPViewStates;
-import model.JPSQLiteData;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 
-public class JPViewMemberRecords extends JPanel 
+public class JPViewRecords extends JPanel 
 {
 	private static final long serialVersionUID = -7386656563185975615L;
 	private JPController base;
@@ -43,7 +40,7 @@ public class JPViewMemberRecords extends JPanel
     private TableRowSorter<TableModel> rowSorter;
     private JTextField textField;
 	
-	public JPViewMemberRecords(JPController base)
+	public JPViewRecords(JPController base)
 	{
 		this.base = base;
 		layout = new GridBagLayout();
@@ -53,7 +50,7 @@ public class JPViewMemberRecords extends JPanel
 		ResultSet res = base.getAttendanceData();
 		
 		try 
-		{	dataSet = new JTable(JPController.buildTableModel(res));	}
+		{	dataSet = new JTable(JPController.buildTableModel(res, 1));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
@@ -102,7 +99,6 @@ public class JPViewMemberRecords extends JPanel
 		dataSet.setForeground(Color.BLACK);
 		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 17));
 		dataSet.setBackground(new Color(245, 250, 245));
-		//dataSet.s
 		JTableHeader header = dataSet.getTableHeader();
 		header.setForeground(new Color(0, 100, 0));
 		header.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -131,10 +127,7 @@ public class JPViewMemberRecords extends JPanel
 		backButton.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick)
-			{	
-				JPController.dataRequested = 0;
-				base.changeState(JPViewStates.DEFAULT);	
-			}
+			{	base.changeState(JPViewStates.DEFAULT);	}
 		});
 		
 		textField.getDocument().addDocumentListener(new DocumentListener()
@@ -161,10 +154,7 @@ public class JPViewMemberRecords extends JPanel
 
             @Override
             public void changedUpdate(DocumentEvent e) 
-            {
-                throw new UnsupportedOperationException("Not supported."); 
-            }
-
+            {	throw new UnsupportedOperationException("Not supported."); }
         });
 	}
 }
