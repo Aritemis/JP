@@ -20,18 +20,31 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
 import adapter.JPController;
 import adapter.JPViewStates;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.SwingConstants;
 
@@ -42,15 +55,14 @@ public class Default extends JPanel
 	private JPController base;
 	private GridBagLayout layout;
 	private JButton importMembers;
-	private JButton clearMemberData;
-	private JButton viewMemberData;
-	private JButton exportMemberData;
+//	private JButton clearMemberData;
+//	private JButton viewMemberData;
+//	private JButton exportMemberData;
 	private JButton clearAttendanceData;
 	private JButton viewAttendanceData;
 	private JButton exportAttendanceData;
 	private JButton updateButton;
 	private JComboBox<String> comboBoxA;
-	private JComboBox<String> comboBoxB;
 	private JLabel lblFirstName;
 	private JTextField firstNameField;
 	private JLabel lblLastName;
@@ -61,10 +73,14 @@ public class Default extends JPanel
 	private JFormattedTextField memberNumberField;
 	private JLabel lblExpDate;
 	private JTextField expDateField;
-	private JLabel lblAdult;
 	private JCheckBox adult;
-	private JLabel lblFeast;
 	private JCheckBox feast;
+	private JTable dataSet;
+	private JScrollPane scrollPane;
+    private TableRowSorter<TableModel> rowSorter;
+    private JTextField textField;
+    private JList list;
+	private ListSelectionModel listSelectionModel;
 	private String firstName;
 	private String lastName;
 	private String SCAName;
@@ -79,18 +95,16 @@ public class Default extends JPanel
 		this.base = base;
 		fileChoose = new JFileChooser();
 		layout = new GridBagLayout();
-		clearMemberData = new JButton(" CLEAR MEMBER DATA ");
-		exportMemberData = new JButton(" EXPORT MEMBER DATA ");
-		viewMemberData = new JButton(" VIEW MEMBERS ");
+//		clearMemberData = new JButton(" CLEAR MEMBER DATA ");
+//		exportMemberData = new JButton(" EXPORT MEMBER DATA ");
+//		viewMemberData = new JButton(" VIEW MEMBERS ");
 		importMembers = new JButton(" IMPORT MEMBERS ");
-		clearAttendanceData = new JButton(" CLEAR ATND DATA ");
-		viewAttendanceData = new JButton(" VIEW ATND RECORDS ");
-		exportAttendanceData = new JButton(" EXPORT ATND DATA ");
+		clearAttendanceData = new JButton(" CLEAR DATA ");
+		viewAttendanceData = new JButton(" VIEW RECORDS ");
+		exportAttendanceData = new JButton(" EXPORT DATA ");
 		updateButton = new JButton(" Update Records ");
 		comboBoxA = new JComboBox<String>();
 		comboBoxA.setModel(new DefaultComboBoxModel<String>(new String[] {" Add New", " Update", " Delete"}));
-		comboBoxB = new JComboBox<String>();
-		comboBoxB.setModel(new DefaultComboBoxModel<String>(new String[] {" Attendee Record", " Membership Record", " Both"}));
 		lblFirstName = new JLabel("First Name:");
 		firstNameField = new JTextField();
 		lblLastName = new JLabel("Last Name:");
@@ -101,10 +115,24 @@ public class Default extends JPanel
 		memberNumberField = new JFormattedTextField();
 		lblExpDate = new JLabel("Exp. Date:");
 		expDateField = new JTextField();
-		lblAdult = new JLabel("Adult");
 		adult = new JCheckBox();
-		lblFeast = new JLabel("Feast");
 		feast = new JCheckBox();
+		dataSet = new JTable();
+
+		ResultSet res = base.getMemberData();
+		
+		try 
+		{	dataSet = new JTable(JPController.buildTableModel(res));	}
+		catch (SQLException e) { e.printStackTrace(); }
+		
+		rowSorter = new TableRowSorter<>(dataSet.getModel());
+		dataSet.setRowSorter(rowSorter);
+		textField = new JTextField();
+		list = new JList();
+		listSelectionModel = dataSet.getSelectionModel();
+		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+        dataSet.setSelectionModel(listSelectionModel);
 		
 		setUpLayout();
 		setUpListeners();
@@ -112,15 +140,15 @@ public class Default extends JPanel
 
 	private void setUpLayout() 
 	{
-		layout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		layout.rowWeights = new double[]{0.0, 0.0, 2.0, 0.0, 0.0, 4.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 35.0};
+		layout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+		layout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
 		layout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 		layout.columnWeights = new double[]{0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
 		setLayout(layout);
 		setBorder(new LineBorder(new Color(0, 100, 0), 10));
 		setForeground(new Color(105, 105, 105));
 		setBackground(new Color(245, 245, 245));
-		
+/*		
 		clearMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
 		clearMemberData.setForeground(new Color(0, 128, 0));
 		clearMemberData.setBackground(new Color(255, 255, 255));
@@ -165,7 +193,7 @@ public class Default extends JPanel
 		gbc_viewMemberData.insets = new Insets(20, 15, 5, 5);
 		gbc_viewMemberData.gridx = 4;
 		gbc_viewMemberData.gridy = 0;
-		
+*/		
 		importMembers.setFont(new Font("Arial", Font.PLAIN, 18));
 		importMembers.setForeground(new Color(0, 128, 0));
 		importMembers.setBackground(new Color(105, 105, 105));
@@ -177,9 +205,9 @@ public class Default extends JPanel
 		gbc_importMembers.gridwidth = 2;
 		gbc_importMembers.fill = GridBagConstraints.HORIZONTAL;
 		gbc_importMembers.anchor = GridBagConstraints.NORTH;
-		gbc_importMembers.insets = new Insets(20, 15, 5, 20);
+		gbc_importMembers.insets = new Insets(10, 15, 5, 20);
 		gbc_importMembers.gridx = 6;
-		gbc_importMembers.gridy = 0;	
+		gbc_importMembers.gridy = 1;	
 		
 		clearAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
 		clearAttendanceData.setForeground(new Color(0, 128, 0));
@@ -192,7 +220,7 @@ public class Default extends JPanel
 		gbc_clearAttendanceData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_clearAttendanceData.gridwidth = 2;
 		gbc_clearAttendanceData.anchor = GridBagConstraints.NORTH;
-		gbc_clearAttendanceData.insets = new Insets(5, 20, 5, 5);
+		gbc_clearAttendanceData.insets = new Insets(10, 20, 5, 5);
 		gbc_clearAttendanceData.gridx = 0;
 		gbc_clearAttendanceData.gridy = 1;
 		
@@ -207,7 +235,7 @@ public class Default extends JPanel
 		gbc_viewAttendanceData.gridwidth = 2;
 		gbc_viewAttendanceData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_viewAttendanceData.anchor = GridBagConstraints.NORTH;
-		gbc_viewAttendanceData.insets = new Insets(5, 15, 5, 5);
+		gbc_viewAttendanceData.insets = new Insets(10, 15, 5, 5);
 		gbc_viewAttendanceData.gridx = 4;
 		gbc_viewAttendanceData.gridy = 1;
 		
@@ -222,48 +250,37 @@ public class Default extends JPanel
 		gbc_exportAttendanceData.gridwidth = 2;
 		gbc_exportAttendanceData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_exportAttendanceData.anchor = GridBagConstraints.NORTH;
-		gbc_exportAttendanceData.insets = new Insets(5, 15, 5, 5);
+		gbc_exportAttendanceData.insets = new Insets(10, 15, 5, 5);
 		gbc_exportAttendanceData.gridx = 2;
 		gbc_exportAttendanceData.gridy = 1;
 	
-		updateButton.setFont(new Font("Arial", Font.PLAIN, 25));
+		updateButton.setFont(new Font("Arial", Font.PLAIN, 20));
 		updateButton.setForeground(new Color(0, 128, 0));
 		updateButton.setBackground(new Color(105, 105, 105));
 		updateButton.setFocusPainted(false);
 		updateButton.setContentAreaFilled(false);
 		updateButton.setBorder(new LineBorder(new Color(0, 128, 0), 2, true));
 		GridBagConstraints gbc_updateButton = new GridBagConstraints();
-		gbc_updateButton.gridwidth = 6;
-		gbc_updateButton.anchor = GridBagConstraints.EAST;
-		gbc_updateButton.insets = new Insets(0, 0, 20, 20);
-		gbc_updateButton.gridx = 2;
-		gbc_updateButton.gridy = 14;
+		gbc_updateButton.insets = new Insets(5, 20, 5, 20);
+		gbc_updateButton.gridx = 7;
+		gbc_updateButton.gridy = 4;
 		
 		comboBoxA.setForeground(new Color(0, 128, 0));
 		comboBoxA.setBackground(new Color(255, 255, 255));
 		GridBagConstraints gbc_comboBoxA = new GridBagConstraints();
 		gbc_comboBoxA.gridwidth = 2;
 		gbc_comboBoxA.anchor = GridBagConstraints.WEST;
-		gbc_comboBoxA.insets = new Insets(15, 20, 5, 5);
+		gbc_comboBoxA.insets = new Insets(10, 20, 15, 5);
 		gbc_comboBoxA.gridx = 0;
-		gbc_comboBoxA.gridy = 3;
-		
-		comboBoxB.setForeground(new Color(0, 128, 0));
-		comboBoxB.setBackground(new Color(255, 255, 255));
-		GridBagConstraints gbc_comboBoxB = new GridBagConstraints();
-		gbc_comboBoxB.gridwidth = 2;
-		gbc_comboBoxB.anchor = GridBagConstraints.WEST;
-		gbc_comboBoxB.insets = new Insets(0, 20, 20, 5);
-		gbc_comboBoxB.gridx = 0;
-		gbc_comboBoxB.gridy = 4;
-		
+		gbc_comboBoxA.gridy = 2;
+
 		lblFirstName.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblFirstName.setForeground(new Color(0, 100, 0));
 		GridBagConstraints gbc_lblFirstName = new GridBagConstraints();
 		gbc_lblFirstName.anchor = GridBagConstraints.WEST;
 		gbc_lblFirstName.insets = new Insets(0, 20, 5, 5);
 		gbc_lblFirstName.gridx = 0;
-		gbc_lblFirstName.gridy = 6;
+		gbc_lblFirstName.gridy = 3;
 		
 		firstNameField.setFont(new Font("Arial", Font.PLAIN, 16));
 		firstNameField.setHorizontalAlignment(SwingConstants.LEFT);
@@ -271,7 +288,7 @@ public class Default extends JPanel
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.gridx = 1;
-		gbc_textField.gridy = 6;	
+		gbc_textField.gridy = 3;	
 		
 		lblLastName.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblLastName.setForeground(new Color(0, 100, 0));
@@ -279,7 +296,7 @@ public class Default extends JPanel
 		gbc_lblLastName.anchor = GridBagConstraints.EAST;
 		gbc_lblLastName.insets = new Insets(0, 15, 5, 5);
 		gbc_lblLastName.gridx = 2;
-		gbc_lblLastName.gridy = 6;
+		gbc_lblLastName.gridy = 3;
 		
 		lastNameField.setFont(new Font("Arial", Font.PLAIN, 16));
 		lastNameField.setHorizontalAlignment(SwingConstants.LEFT);
@@ -287,7 +304,7 @@ public class Default extends JPanel
 		gbc_lastNameField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lastNameField.insets = new Insets(0, 0, 5, 5);
 		gbc_lastNameField.gridx = 3;
-		gbc_lastNameField.gridy = 6;
+		gbc_lastNameField.gridy = 3;
 		
 		lblSCAName.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblSCAName.setForeground(new Color(0, 100, 0));
@@ -295,7 +312,7 @@ public class Default extends JPanel
 		gbc_lblSCAName.anchor = GridBagConstraints.EAST;
 		gbc_lblSCAName.insets = new Insets(0, 15, 5, 5);
 		gbc_lblSCAName.gridx = 4;
-		gbc_lblSCAName.gridy = 6;
+		gbc_lblSCAName.gridy = 3;
 		
 		SCANameField.setFont(new Font("Arial", Font.PLAIN, 16));
 		SCANameField.setHorizontalAlignment(SwingConstants.LEFT);
@@ -303,7 +320,7 @@ public class Default extends JPanel
 		gbc_SCANameField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_SCANameField.insets = new Insets(0, 0, 5, 5);
 		gbc_SCANameField.gridx = 5;
-		gbc_SCANameField.gridy = 6;
+		gbc_SCANameField.gridy = 3;
 		
 		lblMemberNumber.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblMemberNumber.setForeground(new Color(0, 100, 0));
@@ -312,7 +329,7 @@ public class Default extends JPanel
 		gbc_lblMemberNumber.anchor = GridBagConstraints.WEST;
 		gbc_lblMemberNumber.insets = new Insets(0, 20, 5, 5);
 		gbc_lblMemberNumber.gridx = 0;
-		gbc_lblMemberNumber.gridy = 8;
+		gbc_lblMemberNumber.gridy = 4;
 		
 		memberNumberField.setFont(new Font("Arial", Font.PLAIN, 16));
 		memberNumberField.setHorizontalAlignment(SwingConstants.LEFT);
@@ -320,7 +337,7 @@ public class Default extends JPanel
 		gbc_memberNumberField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_memberNumberField.insets = new Insets(0, 0, 5, 5);
 		gbc_memberNumberField.gridx = 1;
-		gbc_memberNumberField.gridy = 8;
+		gbc_memberNumberField.gridy = 4;
 		
 		lblExpDate.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblExpDate.setForeground(new Color(0, 100, 0));
@@ -329,7 +346,7 @@ public class Default extends JPanel
 		gbc_lblExpDate.anchor = GridBagConstraints.WEST;
 		gbc_lblExpDate.insets = new Insets(0, 15, 5, 5);
 		gbc_lblExpDate.gridx = 2;
-		gbc_lblExpDate.gridy = 8;
+		gbc_lblExpDate.gridy = 4;
 		
 		expDateField.setFont(new Font("Arial", Font.PLAIN, 16));
 		expDateField.setHorizontalAlignment(SwingConstants.LEFT);
@@ -337,49 +354,74 @@ public class Default extends JPanel
 		gbc_expDateField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_expDateField.insets = new Insets(0, 0, 5, 5);
 		gbc_expDateField.gridx = 3;
-		gbc_expDateField.gridy = 8;
-		
-		lblAdult.setFont(new Font("Arial", Font.PLAIN, 16));
-		lblAdult.setForeground(new Color(0, 100, 0));
-		lblAdult.setHorizontalAlignment(SwingConstants.RIGHT);
-		GridBagConstraints gbc_lblAdult = new GridBagConstraints();
-		gbc_lblAdult.anchor = GridBagConstraints.EAST;
-		gbc_lblAdult.insets = new Insets(10, 20, 5, 5);
-		gbc_lblAdult.gridx = 0;
-		gbc_lblAdult.gridy = 10;
+		gbc_expDateField.gridy = 4;
 		
 		adult.setSelected(true);
+		adult.setText(" Adult");
+		adult.setFont(new Font("Arial", Font.PLAIN, 16));
+		adult.setForeground(new Color(0, 100, 0));
+		adult.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_adult = new GridBagConstraints();
-		gbc_adult.anchor = GridBagConstraints.WEST;
-		gbc_adult.insets = new Insets(10, 5, 5, 5);
-		gbc_adult.gridx = 1;
-		gbc_adult.gridy = 10;
+		gbc_adult.fill = GridBagConstraints.HORIZONTAL;
+		gbc_adult.insets = new Insets(10, 15, 5, 5);
+		gbc_adult.gridx = 4;
+		gbc_adult.gridy = 4;
 		
-		lblFeast.setFont(new Font("Arial", Font.PLAIN, 16));
-		lblFeast.setForeground(new Color(0, 100, 0));
-		lblFeast.setHorizontalAlignment(SwingConstants.RIGHT);
-		GridBagConstraints gbc_lblFeast = new GridBagConstraints();
-		gbc_lblFeast.anchor = GridBagConstraints.EAST;
-		gbc_lblFeast.insets = new Insets(0, 20, 5, 5);
-		gbc_lblFeast.gridx = 0;
-		gbc_lblFeast.gridy = 12;
-		
+		feast.setSelected(false);
+		feast.setText(" Feast    ");
+		feast.setFont(new Font("Arial", Font.PLAIN, 16));
+		feast.setForeground(new Color(0, 100, 0));
 		GridBagConstraints gbc_feast = new GridBagConstraints();
 		gbc_feast.anchor = GridBagConstraints.WEST;
-		gbc_feast.insets = new Insets(0, 5, 5, 5);
-		gbc_feast.gridx = 1;
-		gbc_feast.gridy = 12;
+		gbc_feast.insets = new Insets(10, 5, 5, 5);
+		gbc_feast.gridx = 5;
+		gbc_feast.gridy = 4;
 		
-		add(clearMemberData, gbc_clearMemberData);
-		add(exportMemberData, gbc_exportMemberData);
-		add(viewMemberData, gbc_viewMemberData);		
+		
+		textField.setForeground(new Color(0, 100, 0));
+		textField.setFont(new Font("Arial", Font.PLAIN, 17));
+		textField.setBackground(new Color(245, 250, 245));
+		textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2),
+                BorderFactory.createEmptyBorder(2, 20, 2, 2)));
+		GridBagConstraints gbc_textField2 = new GridBagConstraints();
+		gbc_textField2.gridwidth = 8;
+		gbc_textField2.insets = new Insets(15, 50, 15, 50);
+		gbc_textField2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField2.gridx = 0;
+		gbc_textField2.gridy = 5;
+		
+		dataSet.setForeground(Color.BLACK);
+		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 17));
+		dataSet.setBackground(new Color(245, 250, 245));
+		JTableHeader header = dataSet.getTableHeader();
+		header.setForeground(new Color(0, 100, 0));
+		header.setFont(new Font("Arial", Font.PLAIN, 20));
+		header.setBackground(new Color(245, 245, 245));
+		header.setBorder(new LineBorder(new Color(0, 128, 0), 2));
+		scrollPane = new JScrollPane(dataSet);
+		scrollPane.setViewportBorder(new LineBorder(new Color(0, 100, 0)));
+		scrollPane.getViewport().setForeground(Color.BLACK);
+		scrollPane.getViewport().setFont(new Font("Arial", Font.PLAIN, 20));
+		scrollPane.getViewport().setBackground(new Color(245, 250, 245));
+		scrollPane.setBorder(new LineBorder(new Color(0, 128, 0), 2));
+		GridBagConstraints gbc_dataSet = new GridBagConstraints();
+		gbc_dataSet.gridheight = 3;
+		gbc_dataSet.gridwidth = 8;
+		gbc_dataSet.gridy = 6;
+		gbc_dataSet.insets = new Insets(0, 20, 20, 20);
+		gbc_dataSet.fill = GridBagConstraints.BOTH;
+		gbc_dataSet.gridx = 0;
+		
+		
+//		add(clearMemberData, gbc_clearMemberData);
+//		add(exportMemberData, gbc_exportMemberData);
+//		add(viewMemberData, gbc_viewMemberData);		
 		add(importMembers, gbc_importMembers);
 		add(clearAttendanceData, gbc_clearAttendanceData);
 		add(viewAttendanceData, gbc_viewAttendanceData);
 		add(exportAttendanceData, gbc_exportAttendanceData);
 		add(updateButton, gbc_updateButton);
 		add(comboBoxA, gbc_comboBoxA);
-		add(comboBoxB, gbc_comboBoxB);
 		add(lblFirstName, gbc_lblFirstName);
 		add(firstNameField, gbc_textField);
 		add(lblLastName, gbc_lblLastName);
@@ -390,10 +432,10 @@ public class Default extends JPanel
 		add(memberNumberField, gbc_memberNumberField);
 		add(lblExpDate, gbc_lblExpDate);
 		add(expDateField, gbc_expDateField);
-		add(lblAdult, gbc_lblAdult);
 		add(adult, gbc_adult);
-		add(lblFeast, gbc_lblFeast);
 		add(feast, gbc_feast);
+		add(textField, gbc_textField2);
+		add(scrollPane, gbc_dataSet);
 	}
 	
 	private void setUpListeners() 
@@ -419,7 +461,7 @@ public class Default extends JPanel
 				}
 			}
 		});
-		
+/*		
 		clearMemberData.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick) 
@@ -465,7 +507,7 @@ public class Default extends JPanel
 				}
 			}
 		});
-		
+*/		
 		clearAttendanceData.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick) 
@@ -515,6 +557,36 @@ public class Default extends JPanel
 				}
 			}
 		});
+		
+		textField.getDocument().addDocumentListener(new DocumentListener()
+		{
+            @Override
+            public void insertUpdate(DocumentEvent e) 
+            {
+                String text = textField.getText();
+                if (text.trim().length() == 0) 
+                {	 rowSorter.setRowFilter(null);	} 
+                else 
+                {	rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));	}
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) 
+            {
+                String text = textField.getText();
+                if (text.trim().length() == 0) 
+                {	rowSorter.setRowFilter(null);	} 
+                else 
+                {	rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));	}
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) 
+            {
+                throw new UnsupportedOperationException("Not supported."); 
+            }
+
+        });
 	
 	}
 	
@@ -538,6 +610,45 @@ public class Default extends JPanel
 		expDateField.setText("");
 		adult.setSelected(true);
 		feast.setSelected(false);
+	}
+	
+	private void updateFields()
+	{
+		firstNameField.setText(firstName);
+		lastNameField.setText(lastName);
+		SCANameField.setText(SCAName);
+		memberNumberField.setText(membershipNumber);
+		expDateField.setText(expirationDate);
+		adult.setSelected(isAdult);
+	}
+	
+	private void updateValues()
+	{
+		int row = dataSet.getSelectedRow();
+		firstName = (String) dataSet.getValueAt(row, 1);
+		lastName = (String) dataSet.getValueAt(row, 0);
+		SCAName = (String) dataSet.getValueAt(row, 2);
+		Integer temp = (Integer) dataSet.getValueAt(row, 3);
+		membershipNumber = "" + temp.intValue();
+		expirationDate = (String) dataSet.getValueAt(row, 4);
+		temp = (Integer) dataSet.getValueAt(row, 5);
+		if(temp.intValue() == 1)
+		{	isAdult = true;	}
+		else
+		{	isAdult = false;	}
+		updateFields();
+	}
+	
+	private class SharedListSelectionHandler implements ListSelectionListener 
+	{		
+	    public void valueChanged(ListSelectionEvent e) 
+	    {
+	        ListSelectionModel lsm = (ListSelectionModel)e.getSource();;
+	        if (lsm.isSelectionEmpty()){	} 
+	        else 
+	        {	updateValues();	}
+
+	    }
 	}
 	
 }

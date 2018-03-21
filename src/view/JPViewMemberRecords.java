@@ -50,11 +50,7 @@ public class JPViewMemberRecords extends JPanel
 		backButton = new JButton(" BACK ");
 		dataSet = new JTable();
 
-		ResultSet res = base.getMemberData();
-		if(JPController.dataRequested == 1)
-		{
-			res = base.getAttendanceData();
-		}
+		ResultSet res = base.getAttendanceData();
 		
 		try 
 		{	dataSet = new JTable(JPController.buildTableModel(res));	}
