@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableModel;
 
@@ -35,18 +36,24 @@ public class JPSQLiteData
 		initial();
 	}
 	
-	public ResultSet query(String SQLCommand)
+	public void getTotals()
 	{
-		ResultSet res = null;
-		try
+		ResultSet res = getAttendanceData();
+		if(res != null)
 		{
-			if (con == null)
-			{	getConnection();	}
-			Statement statement = con.createStatement();
-			res = statement.executeQuery(SQLCommand);
+			try 
+			{
+				while(res.next())
+				{
+					JPController.people++;
+					if(res.getBoolean("isAnAdult"))
+					{	JPController.adults++;	}
+					if(res.getBoolean("hadFeast"))
+					{	JPController.feasts++;	}
+				}
+			} 
+			catch (SQLException e) {	e.printStackTrace();	}
 		}
-		catch (SQLException e){e.printStackTrace();}
-		return res;
 	}
 	
 	public int importMembers(File csvFile)
@@ -203,6 +210,7 @@ public class JPSQLiteData
 			PreparedStatement preparedStatement = con.prepareStatement(statement);
 			preparedStatement.setBoolean(1, true);
 			preparedStatement.executeUpdate();
+			JPController.clearTotals();
 		}
 		catch (SQLException e) {	e.printStackTrace();	}
 	}
@@ -242,6 +250,64 @@ public class JPSQLiteData
 		catch (SQLException e) {e.printStackTrace();}
 	}
 	
+	public boolean addAttendee(String firstName, String lastName, boolean isAnAdult, boolean hadFeast)
+	{
+		boolean result = false;
+		if (con == null)
+		{	getConnection();	}
+		try 
+		{
+			if(recordExists(firstName, lastName, 1))
+			{	JOptionPane.showMessageDialog(JPController.errorPanel, "That person is already in attendance.", "Error", JOptionPane.ERROR_MESSAGE);	}
+			else
+			{
+				PreparedStatement preparedStatement;
+				preparedStatement = con.prepareStatement("INSERT INTO ATTENDANCEDATA VALUES( ?, ?, ?, ?, ?);");
+				preparedStatement.setString(1, firstName);
+				preparedStatement.setString(2, lastName);
+				preparedStatement.setBoolean(3, isAnAdult);
+				preparedStatement.setBoolean(4, recordExists(firstName, lastName, 0));
+				preparedStatement.setBoolean(5, hadFeast);
+				preparedStatement.execute();
+				JPController.people++;
+				if(isAnAdult)
+				{	JPController.adults++;	}
+				if(hadFeast)
+				{	JPController.feasts++;	}
+				result = true;
+			}
+		} 
+		catch (SQLException e)
+		{	
+			e.printStackTrace();	
+			JOptionPane.showMessageDialog(JPController.errorPanel, "Invalid input or duplicate entry.", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		return result;
+	}
+	
+	public boolean deleteAttendee(String firstName, String lastName)
+	{
+		boolean result = false;
+		try 
+		{
+			if(!recordExists(firstName, lastName, 1))
+			{
+				String statement = "DELETE FROM ATTENDANCEDATA WHERE firstName = ? AND lastName = ?";
+				PreparedStatement preparedStatement = con.prepareStatement(statement);
+				preparedStatement.setString(1, firstName);
+				preparedStatement.setString(2, lastName);
+				preparedStatement.executeUpdate();
+				JPController.clearTotals();
+				getTotals();
+				result = true;
+			}
+			else
+			{	JOptionPane.showMessageDialog(JPController.errorPanel, "No such person in attendance.", "Error", JOptionPane.ERROR_MESSAGE);	}
+		}
+		catch (SQLException e) {	e.printStackTrace();	}
+		return result;
+	}
+	
 	private boolean userExists(int membershipNumber)
 	{
 		boolean result = false;
@@ -259,6 +325,30 @@ public class JPSQLiteData
 		catch (SQLException e){}
 		return result;
 	}
+	
+	private boolean recordExists(String firstName, String lastName, int whichTable)
+	{
+		boolean result = false;
+		ResultSet res = null;
+		String table = "ATTENDANCEDATA";
+		try
+		{
+			if (con == null)
+			{	getConnection();	}
+			
+			if(whichTable == 0)
+			{	table = "MEMBERDATA";	}
+			
+			String query = "SELECT * FROM " + table + " WHERE firstName = ? AND lastName = ?";
+			PreparedStatement preparedStatement = con.prepareStatement(query);
+			preparedStatement.setString(1, firstName);
+			preparedStatement.setString(2, lastName);
+			res = preparedStatement.executeQuery();
+			result = res == null;
+		}
+		catch (SQLException e){}
+		return result;
+	}
 
 	private void getConnection()
 	{
@@ -270,7 +360,7 @@ public class JPSQLiteData
 		}
 		catch (SQLException | ClassNotFoundException e)
 		{
-			//TODO maybe make this work for Mac as well???
+			//TODO Mac?
 			try			
 			{
 				Class.forName("org.sqlite.JDBC");

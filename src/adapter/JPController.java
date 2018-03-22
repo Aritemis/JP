@@ -15,12 +15,16 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import model.CustomTableModel;
 import model.JPSQLiteData;
 import view.Frame;
 
 public class JPController 
 {
 	public static JPanel errorPanel;
+	public static int people;
+	public static int adults;
+	public static int feasts;
 	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership #", "Expiration Date", "Is An Adult"};
 	public static String[] attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attended Feast"};
 	private JPSQLiteData database;
@@ -30,7 +34,9 @@ public class JPController
 	public void start()
 	{
 		errorPanel = new JPanel();
+		clearTotals();
 		database = new JPSQLiteData(this);
+		database.getTotals();
 		frame = new Frame(this);
 		state = JPViewStates.DEFAULT;
 	}
@@ -70,7 +76,13 @@ public class JPController
 	
 	public ResultSet getAttendanceData()
 	{	return database.getAttendanceData();	}
-		
+	
+	public boolean addAttendanceData(String firstName, String lastName, boolean isAdult, boolean hadFeast)
+	{	return database.addAttendee(firstName, lastName, isAdult, hadFeast);	}
+	
+	public boolean deleteAttendanceData(String firstName, String lastName)
+	{	return database.deleteAttendee(firstName, lastName);	}
+	
 	public void exportAttendaceData(JTable table, File file)
 	{
 		boolean result = database.exportAttendanceData(table, file);
@@ -80,31 +92,13 @@ public class JPController
 		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
 	}
 	
-	public static DefaultTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException 
+	public static void clearTotals()
 	{
-		ResultSetMetaData metaData = memberRecords.getMetaData();
-
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
-	    for (int column = 0; column < columnCount; column++) 
-	    {	
-	    	if(value == 0)
-	    	{	columnNames.add(JPController.memberDataTableHeader[column]);	}
-	    	else
-	    	{	columnNames.add(JPController.attendanceDataTableHeader[column]);	}
-	    }
-
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-	    while (memberRecords.next()) 
-	    {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) 
-	        {
-	            vector.add(memberRecords.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
-	    return new DefaultTableModel(data, columnNames);
+		people = 0;
+		adults = 0;
+		feasts = 0;
 	}
 	
+
+
 }

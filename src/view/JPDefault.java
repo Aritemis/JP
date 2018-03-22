@@ -38,12 +38,14 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import adapter.JPController;
 import adapter.JPViewStates;
+import model.CustomTableModel;
+
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.BorderFactory;
 import javax.swing.SwingConstants;
 
-public class Default extends JPanel
+public class JPDefault extends JPanel
 {
 	private static final long serialVersionUID = 7833894194480819845L;
 	private JFileChooser fileChoose;
@@ -82,7 +84,7 @@ public class Default extends JPanel
 	private int value;
 	
 	
-	public Default(JPController base)
+	public JPDefault(JPController base)
 	{
 		this.base = base;
 		fileChoose = new JFileChooser();
@@ -91,9 +93,9 @@ public class Default extends JPanel
 		clearAttendanceData = new JButton(" CLEAR DATA ");
 		viewAttendanceData = new JButton(" VIEW RECORDS ");
 		exportAttendanceData = new JButton(" EXPORT DATA ");
-		updateButton = new JButton(" Update Records ");
+		updateButton = new JButton(" Add Record ");
 		comboBoxA = new JComboBox<String>();
-		comboBoxA.setModel(new DefaultComboBoxModel<String>(new String[] {" Add New", " Update", " Delete"}));
+		comboBoxA.setModel(new DefaultComboBoxModel<String>(new String[] {" Add New", " Delete"}));
 		lblFirstName = new JLabel("First Name:");
 		firstNameField = new JTextField();
 		lblLastName = new JLabel("Last Name:");
@@ -123,7 +125,7 @@ public class Default extends JPanel
 		{	res = base.getAttendanceData();	}
 		
 		try 
-		{	dataSet = new JTable(JPController.buildTableModel(res, value));	}
+		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, value));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
@@ -351,6 +353,7 @@ public class Default extends JPanel
 		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 17));
 		dataSet.setBackground(new Color(245, 250, 245));
 		JTableHeader header = dataSet.getTableHeader();
+		header.setReorderingAllowed(false);
 		header.setForeground(new Color(0, 100, 0));
 		header.setFont(new Font("Arial", Font.PLAIN, 20));
 		header.setBackground(new Color(245, 245, 245));
@@ -410,8 +413,9 @@ public class Default extends JPanel
 			    });
 				int valueReturned = fileChoose.showOpenDialog(temp);
 				if(valueReturned == JFileChooser.APPROVE_OPTION)
-				{
-					base.importMembers(fileChoose.getSelectedFile());
+				{	
+					base.importMembers(fileChoose.getSelectedFile());	
+					setUpTable();
 				}
 			}
 		});
@@ -423,16 +427,17 @@ public class Default extends JPanel
 				JPanel temp = new JPanel();
 				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all attendance data from the database?");
 				if(valueReturned == JOptionPane.OK_OPTION)
-				{	base.clearAttendaceData();	}
+				{	
+					base.clearAttendaceData();	
+					setUpTable();
+				}
 			}
 		});
 		
 		viewAttendanceData.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick) 
-			{	
-				base.changeState(JPViewStates.VIEWDATA);	
-			}
+			{	base.changeState(JPViewStates.VIEWDATA);	}
 		});
 		
 		exportAttendanceData.addActionListener(new ActionListener()
@@ -457,7 +462,7 @@ public class Default extends JPanel
 					JTable dataSet = new JTable();
 					ResultSet res = base.getAttendanceData();
 					try 
-					{	dataSet = new JTable(JPController.buildTableModel(res, 1));	}
+					{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
 					catch (SQLException e) { e.printStackTrace(); }
 					System.out.println(fileChoose.getSelectedFile().getPath());
 					base.exportMembers(dataSet, fileChoose.getSelectedFile());
@@ -472,7 +477,13 @@ public class Default extends JPanel
 				if(value != comboBoxA.getSelectedIndex())
 				{
 					value = comboBoxA.getSelectedIndex();
+					if(value == 0)
+					{	updateButton.setText(" Add Record ");	}
+					else
+					{	updateButton.setText(" Delete Record ");	}
 					setUpTable();
+					resetValues();
+					resetFields();
 				}
 			}
 		});
@@ -509,18 +520,27 @@ public class Default extends JPanel
 			public void actionPerformed(ActionEvent onClick)
 			{	
 				assignValues();
-				if(firstName.length() < 1 || lastName.length() < 1){	}
-				
+				boolean result = false;
+				boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
+				boolean SCA = SCAName.length() > 1;
+				if(!(firstAndLast || SCA))
+				{	JOptionPane.showMessageDialog(JPController.errorPanel, "Missing Required Information", "Error", JOptionPane.ERROR_MESSAGE);	}
 				switch(value)
 				{
 					case 0:
+						result = base.addAttendanceData(firstName, lastName, isAdult, hadFeast);
 						break;
 					case 1:
-						break;
-					case 2:
+						result = base.deleteAttendanceData(firstName, lastName);
 						break;
 					default:
 						break;
+				}
+				if(result)
+				{
+					resetFields();
+					assignValues();
+					setUpTable();
 				}
 			}
 		});
@@ -560,18 +580,38 @@ public class Default extends JPanel
 	
 	private void updateValues()
 	{
-		int row = dataSet.getSelectedRow();
-		firstName = (String) dataSet.getValueAt(row, 1);
-		lastName = (String) dataSet.getValueAt(row, 0);
-		SCAName = (String) dataSet.getValueAt(row, 2);
-		Integer temp = (Integer) dataSet.getValueAt(row, 3);
-		membershipNumber = "" + temp.intValue();
-		expirationDate = (String) dataSet.getValueAt(row, 4);
-		temp = (Integer) dataSet.getValueAt(row, 5);
-		if(temp.intValue() == 1)
-		{	isAdult = true;	}
+		if(value == 0)
+		{
+			int row = dataSet.getSelectedRow();
+			firstName = (String) dataSet.getValueAt(row, 1);
+			lastName = (String) dataSet.getValueAt(row, 0);
+			SCAName = (String) dataSet.getValueAt(row, 2);
+			Integer temp = (Integer) dataSet.getValueAt(row, 3);
+			membershipNumber = "" + temp.intValue();
+			expirationDate = (String) dataSet.getValueAt(row, 4);
+			temp = (Integer) dataSet.getValueAt(row, 5);
+			if(temp.intValue() == 1)
+			{	isAdult = true;	}
+			else
+			{	isAdult = false;	}
+		}
 		else
-		{	isAdult = false;	}
+		{
+			int row = dataSet.getSelectedRow();
+			firstName = (String) dataSet.getValueAt(row, 1);
+			lastName = (String) dataSet.getValueAt(row, 0);
+			Integer temp = (Integer) dataSet.getValueAt(row, 2);
+			if(temp.intValue() == 1)
+			{	isAdult = true;	}
+			else
+			{	isAdult = false;	}
+			temp = (Integer) dataSet.getValueAt(row, 4);
+			if(temp.intValue() == 1)
+			{	hadFeast = true;	}
+			else
+			{	hadFeast = false;	}
+
+		}
 		updateFields();
 	}
 	
@@ -594,7 +634,6 @@ public class Default extends JPanel
 	        if (lsm.isSelectionEmpty()){	} 
 	        else 
 	        {	updateValues();	}
-
 	    }
 	}
 	

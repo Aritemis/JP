@@ -15,14 +15,14 @@ public class Frame extends JFrame
 	private static final long serialVersionUID = -2248105492340561524L;
 	private JPController base;
 	private JPanel panel;
-	private Default def;
+	private JPDefault def;
 	private Dimension minSize;
 	
 
 	public Frame(JPController base)
 	{
 		this.base = base;
-		def = new Default(base);
+		def = new JPDefault(base);
 		panel = def;
 		minSize = new Dimension(960, 600);
 		setExtendedState(JFrame.MAXIMIZED_BOTH); 
@@ -41,7 +41,7 @@ public class Frame extends JFrame
 		{
 			case DEFAULT:
 				panel.removeAll();
-				panel = new Default(base);
+				panel = new JPDefault(base);
 				break;
 			case VIEWDATA:
 				panel.removeAll();
@@ -49,7 +49,7 @@ public class Frame extends JFrame
 				break;
 			default:
 				panel.removeAll();
-				panel = new Default(base);
+				panel = new JPDefault(base);
 				break;
 		}	
 		setContentPane(panel);

@@ -26,8 +26,12 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import adapter.JPController;
 import adapter.JPViewStates;
+import model.CustomTableModel;
+
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 public class JPViewRecords extends JPanel 
 {
@@ -39,6 +43,7 @@ public class JPViewRecords extends JPanel
 	private JScrollPane scrollPane;
     private TableRowSorter<TableModel> rowSorter;
     private JTextField textField;
+    private JLabel totalLabel;
 	
 	public JPViewRecords(JPController base)
 	{
@@ -50,12 +55,13 @@ public class JPViewRecords extends JPanel
 		ResultSet res = base.getAttendanceData();
 		
 		try 
-		{	dataSet = new JTable(JPController.buildTableModel(res, 1));	}
+		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
 		dataSet.setRowSorter(rowSorter);
 		textField = new JTextField();
+		totalLabel = new JLabel("People: " + JPController.people + "   Adults: " + JPController.adults + "   Feasts: " + JPController.feasts);
 		
 		setUpLayout();
 		setUpListeners();
@@ -72,7 +78,7 @@ public class JPViewRecords extends JPanel
 		setForeground(new Color(0, 255, 255));
 		setBackground(new Color(245, 245, 245));
 		
-		backButton.setFont(new Font("Arial", Font.PLAIN, 20));
+		backButton.setFont(new Font("Arial", Font.PLAIN, 25));
 		backButton.setForeground(new Color(0, 100, 0));
 		backButton.setBackground(new Color(0, 0, 0));
 		backButton.setFocusPainted(false);
@@ -90,7 +96,7 @@ public class JPViewRecords extends JPanel
 		textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2),
                 BorderFactory.createEmptyBorder(2, 20, 2, 2)));
 		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 5;
+		gbc_textField.gridwidth = 3;
 		gbc_textField.insets = new Insets(10, 50, 5, 50);
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 0;
@@ -99,7 +105,9 @@ public class JPViewRecords extends JPanel
 		dataSet.setForeground(Color.BLACK);
 		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 17));
 		dataSet.setBackground(new Color(245, 250, 245));
+		dataSet.setCellSelectionEnabled(false);
 		JTableHeader header = dataSet.getTableHeader();
+		header.setReorderingAllowed(false);
 		header.setForeground(new Color(0, 100, 0));
 		header.setFont(new Font("Arial", Font.PLAIN, 20));
 		header.setBackground(new Color(245, 245, 245));
@@ -111,15 +119,26 @@ public class JPViewRecords extends JPanel
 		scrollPane.getViewport().setBackground(new Color(245, 250, 245));
 		scrollPane.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		GridBagConstraints gbc_dataSet = new GridBagConstraints();
-		gbc_dataSet.gridwidth = 5;
+		gbc_dataSet.gridwidth = 3;
 		gbc_dataSet.gridy = 4;
 		gbc_dataSet.insets = new Insets(0, 20, 20, 20);
 		gbc_dataSet.fill = GridBagConstraints.BOTH;
 		gbc_dataSet.gridx = 0;
 		
+		totalLabel.setForeground(new Color(34, 139, 34));
+		totalLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		totalLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+		GridBagConstraints gbc_totalLabel = new GridBagConstraints();
+		gbc_totalLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_totalLabel.gridwidth = 2;
+		gbc_totalLabel.insets = new Insets(20, 0, 5, 20);
+		gbc_totalLabel.gridx = 1;
+		gbc_totalLabel.gridy = 0;
+		
 		add(backButton, gbc_backButton);
 		add(textField, gbc_textField);
 		add(scrollPane, gbc_dataSet);
+		add(totalLabel, gbc_totalLabel);
 	}
 	
 	private void setUpListeners() 
