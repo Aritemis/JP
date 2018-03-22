@@ -61,7 +61,11 @@ public class JPViewRecords extends JPanel
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
 		dataSet.setRowSorter(rowSorter);
 		textField = new JTextField();
-		totalLabel = new JLabel("People: " + JPController.people + "   Adults: " + JPController.adults + "   Feasts: " + JPController.feasts);
+		totalLabel = new JLabel("People: " + JPController.people 
+								+ "   Members: " + JPController.members 
+								+ "   Adults: " + JPController.adults 
+								+ "   Feasts: " + JPController.feasts);
+		
 		
 		setUpLayout();
 		setUpListeners();
@@ -93,8 +97,7 @@ public class JPViewRecords extends JPanel
 		textField.setForeground(new Color(0, 100, 0));
 		textField.setFont(new Font("Arial", Font.PLAIN, 17));
 		textField.setBackground(new Color(245, 250, 245));
-		textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2),
-                BorderFactory.createEmptyBorder(2, 20, 2, 2)));
+		textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2), BorderFactory.createEmptyBorder(2, 20, 2, 2)));
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.gridwidth = 3;
 		gbc_textField.insets = new Insets(10, 50, 5, 50);

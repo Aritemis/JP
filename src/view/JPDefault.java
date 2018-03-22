@@ -111,9 +111,7 @@ public class JPDefault extends JPanel
 		dataSet = new JTable();
         value = 0;
 
-        resetValues();
         setUpTable();
-		setUpListeners();
 	}
 	
 	private void setUpTable()
@@ -136,10 +134,12 @@ public class JPDefault extends JPanel
         listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
         dataSet.setSelectionModel(listSelectionModel);
         
+        resetValues();
         removeAll();
         revalidate();
         repaint();
         setUpLayout();
+        setUpListeners();
 	}
 
 	private void setUpLayout() 
@@ -401,7 +401,6 @@ public class JPDefault extends JPanel
 		{
 			public void actionPerformed(ActionEvent onClick) 
 			{
-				JPanel temp = new JPanel();
 			    fileChoose.setFileFilter(new FileFilter() 
 			    {
 			        @Override
@@ -411,7 +410,7 @@ public class JPDefault extends JPanel
 			        public String getDescription() 
 			        {	return "CSV files";	}
 			    });
-				int valueReturned = fileChoose.showOpenDialog(temp);
+				int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
 				if(valueReturned == JFileChooser.APPROVE_OPTION)
 				{	
 					base.importMembers(fileChoose.getSelectedFile());	
@@ -424,8 +423,7 @@ public class JPDefault extends JPanel
 		{
 			public void actionPerformed(ActionEvent onClick) 
 			{
-				JPanel temp = new JPanel();
-				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all attendance data from the database?");
+				int valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Are you sure you want to clear all attendance data from the database?");
 				if(valueReturned == JOptionPane.OK_OPTION)
 				{	
 					base.clearAttendaceData();	
@@ -444,7 +442,6 @@ public class JPDefault extends JPanel
 		{
 			public void actionPerformed(ActionEvent onClick)
 			{
-				JPanel temp = new JPanel();
 			    fileChoose.setFileFilter(new FileFilter() 
 			    {
 			        @Override
@@ -456,7 +453,7 @@ public class JPDefault extends JPanel
 			    });
 			    File defaultFile = new File("newFile.csv");
 			    fileChoose.setSelectedFile(defaultFile);
-				int valueReturned = fileChoose.showOpenDialog(temp);
+				int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
 				if(valueReturned == JFileChooser.APPROVE_OPTION)
 				{
 					JTable dataSet = new JTable();
@@ -465,7 +462,11 @@ public class JPDefault extends JPanel
 					{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
 					catch (SQLException e) { e.printStackTrace(); }
 					System.out.println(fileChoose.getSelectedFile().getPath());
-					base.exportMembers(dataSet, fileChoose.getSelectedFile());
+					File newFile = fileChoose.getSelectedFile();
+					valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Do you also wish to clear existing data?");
+					if(valueReturned == JOptionPane.OK_OPTION)
+					{	base.clearMemberData();	}
+					base.exportAttendaceData(dataSet, newFile);
 				}
 			}
 		});
@@ -481,9 +482,8 @@ public class JPDefault extends JPanel
 					{	updateButton.setText(" Add Record ");	}
 					else
 					{	updateButton.setText(" Delete Record ");	}
-					setUpTable();
-					resetValues();
 					resetFields();
+					setUpTable();
 				}
 			}
 		});
@@ -499,7 +499,6 @@ public class JPDefault extends JPanel
                 else 
                 {	rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));	}
             }
-
             @Override
             public void removeUpdate(DocumentEvent e) 
             {
@@ -509,7 +508,6 @@ public class JPDefault extends JPanel
                 else 
                 {	rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));	}
             }
-
             @Override
             public void changedUpdate(DocumentEvent e) 
             {	throw new UnsupportedOperationException("Not supported."); }
@@ -525,16 +523,17 @@ public class JPDefault extends JPanel
 				boolean SCA = SCAName.length() > 1;
 				if(!(firstAndLast || SCA))
 				{	JOptionPane.showMessageDialog(JPController.errorPanel, "Missing Required Information", "Error", JOptionPane.ERROR_MESSAGE);	}
-				switch(value)
+				else
 				{
-					case 0:
-						result = base.addAttendanceData(firstName, lastName, isAdult, hadFeast);
-						break;
-					case 1:
-						result = base.deleteAttendanceData(firstName, lastName);
-						break;
-					default:
-						break;
+					switch(value)
+					{
+						case 0:
+							result = base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+							break;
+						case 1:
+							result = base.deleteAttendanceData(lastName, firstName);
+							break;
+					}
 				}
 				if(result)
 				{
@@ -548,8 +547,8 @@ public class JPDefault extends JPanel
 	
 	private void assignValues()
 	{
-		firstName = firstNameField.getText();
 		lastName = lastNameField.getText();
+		firstName = firstNameField.getText();
 		SCAName = SCANameField.getText();
 		membershipNumber = memberNumberField.getText();
 		expirationDate = expDateField.getText();
@@ -566,6 +565,7 @@ public class JPDefault extends JPanel
 		expDateField.setText("");
 		adult.setSelected(true);
 		feast.setSelected(false);
+		textField.setText("");
 	}
 	
 	private void updateFields()
@@ -583,8 +583,8 @@ public class JPDefault extends JPanel
 		if(value == 0)
 		{
 			int row = dataSet.getSelectedRow();
-			firstName = (String) dataSet.getValueAt(row, 1);
 			lastName = (String) dataSet.getValueAt(row, 0);
+			firstName = (String) dataSet.getValueAt(row, 1);
 			SCAName = (String) dataSet.getValueAt(row, 2);
 			Integer temp = (Integer) dataSet.getValueAt(row, 3);
 			membershipNumber = "" + temp.intValue();
@@ -598,19 +598,18 @@ public class JPDefault extends JPanel
 		else
 		{
 			int row = dataSet.getSelectedRow();
-			firstName = (String) dataSet.getValueAt(row, 1);
 			lastName = (String) dataSet.getValueAt(row, 0);
-			Integer temp = (Integer) dataSet.getValueAt(row, 2);
-			if(temp.intValue() == 1)
+			firstName = (String) dataSet.getValueAt(row, 1);
+			Integer tempInteger = (Integer) dataSet.getValueAt(row, 2);
+			if(tempInteger.intValue() == 1)
 			{	isAdult = true;	}
 			else
 			{	isAdult = false;	}
-			temp = (Integer) dataSet.getValueAt(row, 4);
-			if(temp.intValue() == 1)
+			tempInteger = (Integer) dataSet.getValueAt(row, 4);
+			if(tempInteger.intValue() == 1)
 			{	hadFeast = true;	}
 			else
 			{	hadFeast = false;	}
-
 		}
 		updateFields();
 	}

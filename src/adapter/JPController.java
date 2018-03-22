@@ -23,10 +23,11 @@ public class JPController
 {
 	public static JPanel errorPanel;
 	public static int people;
+	public static int members;
 	public static int adults;
 	public static int feasts;
 	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership #", "Expiration Date", "Is An Adult"};
-	public static String[] attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attended Feast"};
+	public static String[] attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attending Feast"};
 	private JPSQLiteData database;
 	private Frame frame;
 	private JPViewStates state;
@@ -55,16 +56,7 @@ public class JPController
 		else
 		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
 	}
-	
-	public void exportMembers(JTable table, File file)
-	{
-		boolean result = database.exportMembers(table, file);	
-		if(result)
-		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
-		else
-		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
-	}
-	
+		
 	public void clearMemberData()
 	{	database.clearMemberData();	}
 	
@@ -77,11 +69,11 @@ public class JPController
 	public ResultSet getAttendanceData()
 	{	return database.getAttendanceData();	}
 	
-	public boolean addAttendanceData(String firstName, String lastName, boolean isAdult, boolean hadFeast)
-	{	return database.addAttendee(firstName, lastName, isAdult, hadFeast);	}
+	public boolean addAttendanceData(String lastName, String firstName, boolean isAdult, boolean hadFeast)
+	{	return database.addAttendee(lastName, firstName, isAdult, hadFeast);	}
 	
-	public boolean deleteAttendanceData(String firstName, String lastName)
-	{	return database.deleteAttendee(firstName, lastName);	}
+	public boolean deleteAttendanceData(String lastName, String firstName)
+	{	return database.deleteAttendee(lastName, firstName);	}
 	
 	public void exportAttendaceData(JTable table, File file)
 	{
@@ -95,6 +87,7 @@ public class JPController
 	public static void clearTotals()
 	{
 		people = 0;
+		members = 0;
 		adults = 0;
 		feasts = 0;
 	}

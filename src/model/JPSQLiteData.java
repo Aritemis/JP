@@ -48,6 +48,8 @@ public class JPSQLiteData
 					JPController.people++;
 					if(res.getBoolean("isAnAdult"))
 					{	JPController.adults++;	}
+					if(res.getBoolean("isMember"))
+					{	JPController.members++;	}
 					if(res.getBoolean("hadFeast"))
 					{	JPController.feasts++;	}
 				}
@@ -74,8 +76,8 @@ public class JPSQLiteData
                     String[] values = line.split(delimiter);
                     try
                     {
-                        String firstName = values[0].trim();
-                        String lastName = values[1].trim();
+                        String lastName = values[0].trim();
+                        String firstName = values[1].trim();
                         String SCAName = values[2].trim();
                         int membershipNumber = Integer.parseInt(values[3]);
                         String expirationDate = values[4].trim();
@@ -88,7 +90,7 @@ public class JPSQLiteData
                 			preparedStatement.executeUpdate();
                 			System.out.println("Updated user " + membershipNumber + ".");
                         }
-                        addMember(firstName, lastName, SCAName, membershipNumber, expirationDate, isAnAdult);
+                        addMember(lastName, firstName, SCAName, membershipNumber, expirationDate, isAnAdult);
                     }
                     catch(NumberFormatException e){	}
                     /*
@@ -113,37 +115,7 @@ public class JPSQLiteData
             }
         return currentLine;
     }
-	
-	public boolean exportMembers(JTable tableToExport, File newFile)
-	{
-		boolean result = true;
-		try {
-
-	        TableModel model = tableToExport.getModel();
-	        FileWriter csv = new FileWriter(newFile);
-	        String fileContent = new String("");
-
-	        for (int i = 0; i < model.getColumnCount(); i++) 
-	        {	fileContent = fileContent + JPController.memberDataTableHeader[i] + ",";	}
-	        fileContent = fileContent + "\n";
-
-	        for (int i = 0; i < model.getRowCount(); i++) 
-	        {
-	            for (int j = 0; j < model.getColumnCount(); j++) 
-	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
-	            fileContent = fileContent + "\n";
-	        }
-	        csv.write(fileContent);
-	        csv.close();
-	    } 
-		catch (IOException e) 
-		{
-	        e.printStackTrace();
-	        result = false;
-	    }
-		return result;
-	}
-	
+		
 	public void clearMemberData()
 	{
 		try 
@@ -250,28 +222,31 @@ public class JPSQLiteData
 		catch (SQLException e) {e.printStackTrace();}
 	}
 	
-	public boolean addAttendee(String firstName, String lastName, boolean isAnAdult, boolean hadFeast)
+	public boolean addAttendee(String lastName, String firstName, boolean isAnAdult, boolean hadFeast)
 	{
 		boolean result = false;
 		if (con == null)
 		{	getConnection();	}
 		try 
 		{
-			if(recordExists(firstName, lastName, 1))
+			if(recordExists(lastName, firstName, 1))
 			{	JOptionPane.showMessageDialog(JPController.errorPanel, "That person is already in attendance.", "Error", JOptionPane.ERROR_MESSAGE);	}
 			else
 			{
+				boolean isMember = recordExists(lastName, firstName, 0);
 				PreparedStatement preparedStatement;
 				preparedStatement = con.prepareStatement("INSERT INTO ATTENDANCEDATA VALUES( ?, ?, ?, ?, ?);");
-				preparedStatement.setString(1, firstName);
-				preparedStatement.setString(2, lastName);
+				preparedStatement.setString(1, lastName);
+				preparedStatement.setString(2, firstName);
 				preparedStatement.setBoolean(3, isAnAdult);
-				preparedStatement.setBoolean(4, recordExists(firstName, lastName, 0));
+				preparedStatement.setBoolean(4, isMember);
 				preparedStatement.setBoolean(5, hadFeast);
 				preparedStatement.execute();
 				JPController.people++;
 				if(isAnAdult)
 				{	JPController.adults++;	}
+				if(isMember)
+				{	JPController.members++;	}
 				if(hadFeast)
 				{	JPController.feasts++;	}
 				result = true;
@@ -280,22 +255,22 @@ public class JPSQLiteData
 		catch (SQLException e)
 		{	
 			e.printStackTrace();	
-			JOptionPane.showMessageDialog(JPController.errorPanel, "Invalid input or duplicate entry.", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(JPController.errorPanel, "Invalid input.", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		return result;
 	}
 	
-	public boolean deleteAttendee(String firstName, String lastName)
+	public boolean deleteAttendee(String lastName, String firstName)
 	{
 		boolean result = false;
 		try 
 		{
-			if(!recordExists(firstName, lastName, 1))
+			if(recordExists(lastName, firstName, 1))
 			{
-				String statement = "DELETE FROM ATTENDANCEDATA WHERE firstName = ? AND lastName = ?";
+				String statement = "DELETE FROM ATTENDANCEDATA WHERE lastName = ? AND firstName = ?";
 				PreparedStatement preparedStatement = con.prepareStatement(statement);
-				preparedStatement.setString(1, firstName);
-				preparedStatement.setString(2, lastName);
+				preparedStatement.setString(1, lastName);
+				preparedStatement.setString(2, firstName);
 				preparedStatement.executeUpdate();
 				JPController.clearTotals();
 				getTotals();
@@ -326,7 +301,7 @@ public class JPSQLiteData
 		return result;
 	}
 	
-	private boolean recordExists(String firstName, String lastName, int whichTable)
+	private boolean recordExists(String lastName, String firstName, int whichTable)
 	{
 		boolean result = false;
 		ResultSet res = null;
@@ -335,16 +310,14 @@ public class JPSQLiteData
 		{
 			if (con == null)
 			{	getConnection();	}
-			
 			if(whichTable == 0)
 			{	table = "MEMBERDATA";	}
-			
-			String query = "SELECT * FROM " + table + " WHERE firstName = ? AND lastName = ?";
+			String query = "SELECT * FROM " + table + " WHERE lastName = ? AND firstName = ?";
 			PreparedStatement preparedStatement = con.prepareStatement(query);
-			preparedStatement.setString(1, firstName);
-			preparedStatement.setString(2, lastName);
+			preparedStatement.setString(1, lastName);
+			preparedStatement.setString(2, firstName);
 			res = preparedStatement.executeQuery();
-			result = res == null;
+			result = res.next();
 		}
 		catch (SQLException e){}
 		return result;
@@ -386,7 +359,6 @@ public class JPSQLiteData
 			try
 			{
 				state = con.createStatement();
-				
 				ResultSet res = state.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='MEMBERDATA'");
 				if (!res.next())
 				{
@@ -399,11 +371,9 @@ public class JPSQLiteData
 					state.executeUpdate("CREATE TABLE ATTENDANCEDATA(lastName VARCHAR(20)," + "firstName VARCHAR(20)," 
 							+ "isAnAdult BOOLEAN," + "isMember BOOLEAN," + "hadFeast BOOLEAN," 
 							+ "PRIMARY KEY (lastName, firstName));");
-					
 				}
 			}
 			catch (SQLException e){ e.printStackTrace(); }
 		}
 	}
-
 }
