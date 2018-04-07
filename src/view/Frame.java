@@ -24,7 +24,7 @@ public class Frame extends JFrame
 		this.base = base;
 		def = new JPDefault(base);
 		panel = def;
-		minSize = new Dimension(960, 600);
+		minSize = new Dimension(970, 600);
 		setExtendedState(JFrame.MAXIMIZED_BOTH); 
 		//setUndecorated(true);
 		setMinimumSize(minSize);

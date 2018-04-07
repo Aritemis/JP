@@ -1,3 +1,8 @@
+/**
+ * @author Ariana Fairbanks
+ * I made my own table model so I could keep individual cells from being selected.
+ */
+
 package model;
 
 import java.sql.ResultSet;
@@ -13,19 +18,15 @@ public class CustomTableModel extends DefaultTableModel
 	private static final long serialVersionUID = -1675752138627589999L;
 	
     public CustomTableModel(Vector<Vector<Object>> data, Vector<String> columnNames) 
-    {
-		super(data, columnNames);
-	}
+    {	super(data, columnNames);	}
     
 	public boolean isCellEditable(int row, int column)
-    {  
-        return false;  
-    }
+    {	return false;  }
 	
 	public static CustomTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException 
 	{
 		ResultSetMetaData metaData = memberRecords.getMetaData();
-
+		
 	    Vector<String> columnNames = new Vector<String>();
 	    int columnCount = metaData.getColumnCount();
 	    for (int column = 0; column < columnCount; column++) 
@@ -41,9 +42,7 @@ public class CustomTableModel extends DefaultTableModel
 	    {
 	        Vector<Object> vector = new Vector<Object>();
 	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) 
-	        {
-	            vector.add(memberRecords.getObject(columnIndex));
-	        }
+	        {	 vector.add(memberRecords.getObject(columnIndex));	}
 	        data.add(vector);
 	    }
 	    return new CustomTableModel(data, columnNames);

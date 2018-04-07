@@ -116,6 +116,36 @@ public class JPSQLiteData
         return currentLine;
     }
 		
+	public boolean exportMembers(JTable tableToExport, File newFile)
+	{
+		boolean result = true;
+		try {
+
+	        TableModel model = tableToExport.getModel();
+	        FileWriter csv = new FileWriter(newFile);
+	        String fileContent = new String("");
+
+	        for (int i = 0; i < model.getColumnCount(); i++) 
+	        {	fileContent = fileContent + JPController.memberDataTableHeader[i] + ",";	}
+	        fileContent = fileContent + "\n";
+
+	        for (int i = 0; i < model.getRowCount(); i++) 
+	        {
+	            for (int j = 0; j < model.getColumnCount(); j++) 
+	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
+	            fileContent = fileContent + "\n";
+	        }
+	        csv.write(fileContent);
+	        csv.close();
+	    } 
+		catch (IOException e) 
+		{
+	        e.printStackTrace();
+	        result = false;
+	    }
+		return result;
+	}
+	
 	public void clearMemberData()
 	{
 		try 

@@ -6,22 +6,16 @@ package adapter;
 
 import java.io.File;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Vector;
-
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-
-import model.CustomTableModel;
 import model.JPSQLiteData;
 import view.Frame;
 
 public class JPController 
 {
 	public static JPanel errorPanel;
+	public int dataRequested;
 	public static int people;
 	public static int members;
 	public static int adults;
@@ -35,6 +29,7 @@ public class JPController
 	public void start()
 	{
 		errorPanel = new JPanel();
+		dataRequested = 0;
 		clearTotals();
 		database = new JPSQLiteData(this);
 		database.getTotals();
@@ -62,6 +57,15 @@ public class JPController
 	
 	public ResultSet getMemberData()
 	{	return database.getMemberData();	}
+	
+	public void exportMembers(JTable table, File file)
+	{
+		boolean result = database.exportMembers(table, file);	
+		if(result)
+		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		else
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+	}
 	
 	public void clearAttendaceData()
 	{	database.clearAttendanceData();	}
@@ -91,7 +95,5 @@ public class JPController
 		adults = 0;
 		feasts = 0;
 	}
-	
-
 
 }

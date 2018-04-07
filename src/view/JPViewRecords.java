@@ -1,5 +1,6 @@
 /**
  * @author Ariana Fairbanks
+ * Used for viewing both member and attendance data.
  */
 
 package view;
@@ -52,7 +53,9 @@ public class JPViewRecords extends JPanel
 		backButton = new JButton(" BACK ");
 		dataSet = new JTable();
 
-		ResultSet res = base.getAttendanceData();
+		ResultSet res = base.getMemberData();
+		if(base.dataRequested == 1)
+		{	res = base.getAttendanceData();	}
 		
 		try 
 		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
@@ -62,10 +65,9 @@ public class JPViewRecords extends JPanel
 		dataSet.setRowSorter(rowSorter);
 		textField = new JTextField();
 		totalLabel = new JLabel("People: " + JPController.people 
-								+ "   Members: " + JPController.members 
-								+ "   Adults: " + JPController.adults 
-								+ "   Feasts: " + JPController.feasts);
-		
+							+ "   Members: " + JPController.members 
+							+ "   Adults: " + JPController.adults 
+							+ "   Feasts: " + JPController.feasts);
 		
 		setUpLayout();
 		setUpListeners();
@@ -149,7 +151,10 @@ public class JPViewRecords extends JPanel
 		backButton.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent onClick)
-			{	base.changeState(JPViewStates.DEFAULT);	}
+			{	
+				base.changeState(JPViewStates.DEFAULT);
+				base.dataRequested = 0;
+			}
 		});
 		
 		textField.getDocument().addDocumentListener(new DocumentListener()
