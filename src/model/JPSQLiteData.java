@@ -66,7 +66,6 @@ public class JPSQLiteData
         String line = "";
         String delimiter = ",";
         int currentLine = 0;
-
             try 
             {
                 br = new BufferedReader(new FileReader(csvFile));
@@ -74,21 +73,27 @@ public class JPSQLiteData
                 {
                 	currentLine++;
                     String[] values = line.split(delimiter);
+                    int membershipNumber = 0;
+                   // System.out.println(values[3]);
+                    try
+                    {	membershipNumber = Integer.parseInt(values[3]);	}
+                    catch(NumberFormatException e){	}
                     try
                     {
                         String lastName = values[0].trim();
                         String firstName = values[1].trim();
                         String SCAName = values[2].trim();
-                        int membershipNumber = Integer.parseInt(values[3]);
                         String expirationDate = values[4].trim();
                         boolean isAnAdult = Boolean.parseBoolean(values[5].trim());
-                        if(userExists(membershipNumber))
+                        if(userExists(firstName, lastName, membershipNumber))
                         {
-                			String statement = "DELETE FROM MEMBERDATA WHERE membershipNumber = ?";
+                			String statement = "DELETE FROM MEMBERDATA WHERE membershipNumber = ? AND firstName = ? AND lastName = ?";
                 			PreparedStatement preparedStatement = con.prepareStatement(statement);
                 			preparedStatement.setInt(1, membershipNumber);
+                			preparedStatement.setString(2, firstName);
+                			preparedStatement.setString(3, lastName);
                 			preparedStatement.executeUpdate();
-                			System.out.println("Updated user " + membershipNumber + ".");
+                			System.out.println("Updated user " + firstName + " " + lastName + ".");
                         }
                         addMember(lastName, firstName, SCAName, membershipNumber, expirationDate, isAnAdult);
                     }
@@ -348,7 +353,7 @@ public class JPSQLiteData
 		return result;
 	}
 	
-	private boolean userExists(int membershipNumber)
+	private boolean userExists(String firstName, String lastName, int membershipNumber)
 	{
 		boolean result = false;
 		ResultSet res = null;
@@ -356,9 +361,10 @@ public class JPSQLiteData
 		{
 			if (con == null)
 			{	getConnection();	}
-			String query = "SELECT membershipNumber FROM MEMBERDATA WHERE membershipNumber = ?";
+			String query = "SELECT membershipNumber FROM MEMBERDATA WHERE membershipNumber = ? AND firstName = ?";
 			PreparedStatement preparedStatement = con.prepareStatement(query);
 			preparedStatement.setInt(1, membershipNumber);
+			preparedStatement.setString(2, firstName);
 			res = preparedStatement.executeQuery();
 			result = res.next();
 		}
@@ -431,7 +437,7 @@ public class JPSQLiteData
 					state.executeUpdate("CREATE TABLE MEMBERDATA(lastName VARCHAR(20)," + "firstName VARCHAR(20)," 
 							+ "SCAName VARCHAR(20)," + "membershipNumber INTEGER," + "expirationDate VARCHAR(10)," 
 							+ "isAnAdult BOOLEAN,"
-							+ "PRIMARY KEY (membershipNumber));");
+							+ "PRIMARY KEY (lastName, firstName));");
 					
 					state.executeUpdate("CREATE TABLE ATTENDANCEDATA(lastName VARCHAR(20)," + "firstName VARCHAR(20)," 
 							+ "isAnAdult BOOLEAN," + "isMember BOOLEAN," + "hadFeast BOOLEAN," 
