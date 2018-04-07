@@ -6,11 +6,9 @@
 package model;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
-
 import adapter.JPController;
 
 public class CustomTableModel extends DefaultTableModel 

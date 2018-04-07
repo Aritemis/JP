@@ -80,7 +80,7 @@ public class JPDefault extends JPanel
 	private String firstName;
 	private String lastName;
 	private String SCAName;
-	private String membershipNumber;
+	private int membershipNumber;
 	private String expirationDate;
 	private boolean isAdult;
 	private boolean hadFeast;
@@ -178,7 +178,7 @@ public class JPDefault extends JPanel
 		gbc_clearMemberData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_clearMemberData.gridwidth = 3;
 		gbc_clearMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_clearMemberData.insets = new Insets(20, 20, 5, 5);
+		gbc_clearMemberData.insets = new Insets(20, 20, 0, 5);
 		gbc_clearMemberData.gridx = 0;
 		gbc_clearMemberData.gridy = 0;
 		
@@ -193,7 +193,7 @@ public class JPDefault extends JPanel
 		gbc_exportMemberData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_exportMemberData.gridwidth = 2;
 		gbc_exportMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_exportMemberData.insets = new Insets(20, 15, 5, 5);
+		gbc_exportMemberData.insets = new Insets(20, 15, 0, 5);
 		gbc_exportMemberData.gridx = 3;
 		gbc_exportMemberData.gridy = 0;
 		
@@ -208,7 +208,7 @@ public class JPDefault extends JPanel
 		gbc_viewMemberData.gridwidth = 2;
 		gbc_viewMemberData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_viewMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_viewMemberData.insets = new Insets(20, 15, 5, 5);
+		gbc_viewMemberData.insets = new Insets(20, 15, 0, 5);
 		gbc_viewMemberData.gridx = 5;
 		gbc_viewMemberData.gridy = 0;
 		
@@ -223,7 +223,7 @@ public class JPDefault extends JPanel
 		gbc_importMembers.gridwidth = 3;
 		gbc_importMembers.fill = GridBagConstraints.HORIZONTAL;
 		gbc_importMembers.anchor = GridBagConstraints.NORTH;
-		gbc_importMembers.insets = new Insets(20, 15, 5, 20);
+		gbc_importMembers.insets = new Insets(20, 15, 0, 20);
 		gbc_importMembers.gridx = 7;
 		gbc_importMembers.gridy = 0;	
 		
@@ -657,7 +657,7 @@ public class JPDefault extends JPanel
 				boolean result = false;
 				boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
 				if(!firstAndLast)
-				{	JOptionPane.showMessageDialog(JPController.errorPanel, "Missing Required Information", "Error", JOptionPane.ERROR_MESSAGE);	}
+				{	}
 				else
 				{
 					switch(valueA)
@@ -671,10 +671,48 @@ public class JPDefault extends JPanel
 								case 1:
 									result = base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
 									break;
+								case 2:
+									result = true;
+									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+									break;
 							}
 							break;
 						case 1:
-							result = base.deleteAttendanceData(lastName, firstName);
+							switch(valueB)
+							{
+								case 0:
+									result = base.deleteAttendanceData(lastName, firstName);
+									break;
+								case 1:
+									result = base.deleteMemberData(lastName, firstName);
+									break;
+								case 2:
+									result = true;
+									base.deleteAttendanceData(lastName, firstName);
+									base.deleteMemberData(lastName, firstName);
+									break;
+							}
+							break;
+						case 2:
+							result = true;
+							switch(valueB)
+							{
+								case 0:
+									base.deleteAttendanceData(lastName, firstName);
+									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+									break;
+								case 1:
+									base.deleteMemberData(lastName, firstName);
+									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+									break;
+								case 2:
+									base.deleteAttendanceData(lastName, firstName);
+									base.deleteMemberData(lastName, firstName);
+									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+									break;
+							}
 							break;
 					}
 				}
@@ -690,10 +728,14 @@ public class JPDefault extends JPanel
 	
 	private void assignValues()
 	{
+		String tempNumber = memberNumberField.getText().trim();
 		lastName = lastNameField.getText();
 		firstName = firstNameField.getText();
 		SCAName = SCANameField.getText();
-		membershipNumber = memberNumberField.getText();
+		if(tempNumber.length() > 0)
+		{	membershipNumber = Integer.parseInt(memberNumberField.getText());	}
+		else
+		{	membershipNumber = 0;	}
 		expirationDate = expDateField.getText();
 		isAdult = adult.isSelected();
 		hadFeast = feast.isSelected();
@@ -716,14 +758,14 @@ public class JPDefault extends JPanel
 		firstNameField.setText(firstName);
 		lastNameField.setText(lastName);
 		SCANameField.setText(SCAName);
-		memberNumberField.setText(membershipNumber);
+		memberNumberField.setText(membershipNumber + "");
 		expDateField.setText(expirationDate);
 		adult.setSelected(isAdult);
 	}
 	
 	private void updateValues()
 	{
-		if(valueB == 0)
+		if(valueA != 2 && valueB == 0)
 		{
 			int row = dataSet.getSelectedRow();
 			lastName = (String) dataSet.getValueAt(row, 0);
@@ -746,7 +788,7 @@ public class JPDefault extends JPanel
 			firstName = (String) dataSet.getValueAt(row, 1);
 			SCAName = (String) dataSet.getValueAt(row, 2);
 			Integer temp = (Integer) dataSet.getValueAt(row, 3);
-			membershipNumber = "" + temp.intValue();
+			membershipNumber = temp.intValue();
 			expirationDate = (String) dataSet.getValueAt(row, 4);
 			temp = (Integer) dataSet.getValueAt(row, 5);
 			if(temp.intValue() == 1)
@@ -791,10 +833,9 @@ public class JPDefault extends JPanel
 				switch(valueB)
 				{
 					case 0:
-						newText = "Add an attendance record. "
-								+ "It will automatically detect if someone is a member through their first and last or SCA name. "
-								+ "Ignores the member # and exp. date fields. "
-								+ "Will not update any information for existing records.";
+						newText = "Ignores the member # and exp. date fields. "
+								+ "Will not update any information for existing records. "
+								+ "It will automatically detect if someone is a member through their first and last names.";
 						break;
 					case 1:
 						newText = "Add a membership record. "
@@ -823,13 +864,11 @@ public class JPDefault extends JPanel
 				switch(valueB)
 				{
 					case 0:
-						newText = "Update information for an attendance record. "
-								+ "Ignores any fields not stored in an attendance record. "
+						newText = "Ignores any fields not stored in an attendance record. "
 								+ "Does not ignore any empty fields usually stored in attendance records.";
 						break;
 					case 1:
-						newText = "Update information for a membership record."
-								+ "Ignores any fields not stored in a membership record. "
+						newText = "Ignores any fields not stored in a membership record. "
 								+ "Does not ignore any empty fields usually stored in membership records.";
 						break;
 					case 2:
@@ -846,7 +885,7 @@ public class JPDefault extends JPanel
 		firstName = "";
 		lastName = "";
 		SCAName = "";
-		membershipNumber = "";
+		membershipNumber = 0;
 		expirationDate = "";
 		isAdult = true;
 		hadFeast = false;
