@@ -19,7 +19,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -39,7 +38,6 @@ import javax.swing.table.TableRowSorter;
 import adapter.JPController;
 import adapter.JPViewStates;
 import model.CustomTableModel;
-
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.BorderFactory;
@@ -520,8 +518,7 @@ public class JPDefault extends JPanel
 				assignValues();
 				boolean result = false;
 				boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
-				boolean SCA = SCAName.length() > 1;
-				if(!(firstAndLast || SCA))
+				if(!(firstAndLast))
 				{	JOptionPane.showMessageDialog(JPController.errorPanel, "Missing Required Information", "Error", JOptionPane.ERROR_MESSAGE);	}
 				else
 				{

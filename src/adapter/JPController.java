@@ -6,16 +6,9 @@ package adapter;
 
 import java.io.File;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Vector;
-
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-
-import model.CustomTableModel;
 import model.JPSQLiteData;
 import view.Frame;
 
