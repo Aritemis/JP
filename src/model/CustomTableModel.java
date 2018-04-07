@@ -24,15 +24,16 @@ public class CustomTableModel extends DefaultTableModel
     {	return false;  }
 	
 	public static CustomTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException 
-	{
-		ResultSetMetaData metaData = memberRecords.getMetaData();
-		
+	{	
 	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = metaData.getColumnCount();
+	    int columnCount = 5;
 	    for (int column = 0; column < columnCount; column++) 
 	    {	
 	    	if(value == 0)
-	    	{	columnNames.add(JPController.memberDataTableHeader[column]);	}
+	    	{	
+	    		columnCount = 6;
+	    		columnNames.add(JPController.memberDataTableHeader[column]);	
+	    	}
 	    	else
 	    	{	columnNames.add(JPController.attendanceDataTableHeader[column]);	}
 	    }

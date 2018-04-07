@@ -45,6 +45,7 @@ public class JPViewRecords extends JPanel
     private TableRowSorter<TableModel> rowSorter;
     private JTextField textField;
     private JLabel totalLabel;
+    private int value;
 	
 	public JPViewRecords(JPController base)
 	{
@@ -52,13 +53,14 @@ public class JPViewRecords extends JPanel
 		layout = new GridBagLayout();
 		backButton = new JButton(" BACK ");
 		dataSet = new JTable();
+		value = base.dataRequested;
 
 		ResultSet res = base.getMemberData();
-		if(base.dataRequested == 1)
+		if(value == 1)
 		{	res = base.getAttendanceData();	}
 		
 		try 
-		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
+		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, value));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());

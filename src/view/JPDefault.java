@@ -59,6 +59,7 @@ public class JPDefault extends JPanel
 	private JButton updateButton;
 	private JComboBox<String> comboBoxA;
 	private JComboBox<String> comboBoxB;
+	private JButton helpButton;
 	private JLabel lblFirstName;
 	private JTextField firstNameField;
 	private JLabel lblLastName;
@@ -74,7 +75,7 @@ public class JPDefault extends JPanel
 	private JTable dataSet;
 	private JScrollPane scrollPane;
     private TableRowSorter<TableModel> rowSorter;
-    private JTextField textField;
+    private JTextField selectionField;
 	private ListSelectionModel listSelectionModel;
 	private String firstName;
 	private String lastName;
@@ -83,7 +84,8 @@ public class JPDefault extends JPanel
 	private String expirationDate;
 	private boolean isAdult;
 	private boolean hadFeast;
-	private int value;
+	private int valueA;
+	private int valueB;
 	
 	public JPDefault(JPController base)
 	{
@@ -97,7 +99,11 @@ public class JPDefault extends JPanel
 		clearAttendanceData = new JButton(" CLEAR ATND DATA ");
 		exportAttendanceData = new JButton(" EXPORT ATND DATA ");
 		viewAttendanceData = new JButton(" VIEW ATND RECORDS ");
-		updateButton = new JButton("  Add Record  ");
+		comboBoxA = new JComboBox<String>();
+		comboBoxA.setModel(new DefaultComboBoxModel<String>(new String[] {" Add New", " Delete", " Update"}));
+		comboBoxB = new JComboBox<String>();
+		comboBoxB.setModel(new DefaultComboBoxModel<String>(new String[] {" Attendee Record", " Membership Record", " Both"}));
+		helpButton = new JButton(" ? ");
 		lblFirstName = new JLabel("First Name:");
 		firstNameField = new JTextField();
 		lblLastName = new JLabel("Last Name:");
@@ -110,8 +116,10 @@ public class JPDefault extends JPanel
 		expDateField = new JTextField();
 		adult = new JCheckBox();
 		feast = new JCheckBox();
+		updateButton = new JButton("  Add Record  ");
 		dataSet = new JTable();
-        value = 0;
+        valueA = 0;
+        valueB = 0;
 
         setUpTable();
 	}
@@ -119,10 +127,14 @@ public class JPDefault extends JPanel
 	private void setUpTable()
 	{
 		ResultSet res = null;
-		if(value == 0)
-		{	res = base.getMemberData();	}
+		int value = 0;
+		if(valueB == 1)
+		{	
+			res = base.getAttendanceData();	
+			value = 1;
+		}
 		else
-		{	res = base.getAttendanceData();	}
+		{	res = base.getMemberData();	}
 		
 		try 
 		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, value));	}
@@ -130,7 +142,7 @@ public class JPDefault extends JPanel
 		
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
 		dataSet.setRowSorter(rowSorter);
-		textField = new JTextField();
+		selectionField = new JTextField();
 		listSelectionModel = dataSet.getSelectionModel();
 		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
@@ -148,8 +160,8 @@ public class JPDefault extends JPanel
 	{
 		layout.rowHeights = new int[]{0, 0, 36, 0, 0, 0, 0, 0, 0, 0};
 		layout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
-		layout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-		layout.columnWeights = new double[]{0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+		layout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		layout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0};
 		setLayout(layout);
 		setBorder(new LineBorder(new Color(0, 100, 0), 10));
 		setForeground(new Color(105, 105, 105));
@@ -164,9 +176,9 @@ public class JPDefault extends JPanel
 		clearMemberData.setToolTipText("Clears all data from the table containing membership records.");
 		GridBagConstraints gbc_clearMemberData = new GridBagConstraints();
 		gbc_clearMemberData.fill = GridBagConstraints.HORIZONTAL;
-		gbc_clearMemberData.gridwidth = 2;
+		gbc_clearMemberData.gridwidth = 3;
 		gbc_clearMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_clearMemberData.insets = new Insets(20, 20, 0, 5);
+		gbc_clearMemberData.insets = new Insets(20, 20, 5, 5);
 		gbc_clearMemberData.gridx = 0;
 		gbc_clearMemberData.gridy = 0;
 		
@@ -181,8 +193,8 @@ public class JPDefault extends JPanel
 		gbc_exportMemberData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_exportMemberData.gridwidth = 2;
 		gbc_exportMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_exportMemberData.insets = new Insets(20, 15, 0, 5);
-		gbc_exportMemberData.gridx = 2;
+		gbc_exportMemberData.insets = new Insets(20, 15, 5, 5);
+		gbc_exportMemberData.gridx = 3;
 		gbc_exportMemberData.gridy = 0;
 		
 		viewMemberData.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -196,8 +208,8 @@ public class JPDefault extends JPanel
 		gbc_viewMemberData.gridwidth = 2;
 		gbc_viewMemberData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_viewMemberData.anchor = GridBagConstraints.NORTH;
-		gbc_viewMemberData.insets = new Insets(20, 15, 0, 5);
-		gbc_viewMemberData.gridx = 4;
+		gbc_viewMemberData.insets = new Insets(20, 15, 5, 5);
+		gbc_viewMemberData.gridx = 5;
 		gbc_viewMemberData.gridy = 0;
 		
 		importMembers.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -208,11 +220,11 @@ public class JPDefault extends JPanel
 		importMembers.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		importMembers.setToolTipText("Import member data via CSV file. Importing an already existing member will update their information.");
 		GridBagConstraints gbc_importMembers = new GridBagConstraints();
-		gbc_importMembers.gridwidth = 2;
+		gbc_importMembers.gridwidth = 3;
 		gbc_importMembers.fill = GridBagConstraints.HORIZONTAL;
 		gbc_importMembers.anchor = GridBagConstraints.NORTH;
-		gbc_importMembers.insets = new Insets(20, 15, 0, 20);
-		gbc_importMembers.gridx = 6;
+		gbc_importMembers.insets = new Insets(20, 15, 5, 20);
+		gbc_importMembers.gridx = 7;
 		gbc_importMembers.gridy = 0;	
 		
 		clearAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -224,7 +236,7 @@ public class JPDefault extends JPanel
 		clearAttendanceData.setToolTipText("Clears all data from the table containing attendance records.");
 		GridBagConstraints gbc_clearAttendanceData = new GridBagConstraints();
 		gbc_clearAttendanceData.fill = GridBagConstraints.HORIZONTAL;
-		gbc_clearAttendanceData.gridwidth = 2;
+		gbc_clearAttendanceData.gridwidth = 3;
 		gbc_clearAttendanceData.anchor = GridBagConstraints.NORTH;
 		gbc_clearAttendanceData.insets = new Insets(10, 20, 5, 5);
 		gbc_clearAttendanceData.gridx = 0;
@@ -242,7 +254,7 @@ public class JPDefault extends JPanel
 		gbc_exportAttendanceData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_exportAttendanceData.anchor = GridBagConstraints.NORTH;
 		gbc_exportAttendanceData.insets = new Insets(10, 15, 5, 5);
-		gbc_exportAttendanceData.gridx = 2;
+		gbc_exportAttendanceData.gridx = 3;
 		gbc_exportAttendanceData.gridy = 1;
 		
 		viewAttendanceData.setFont(new Font("Arial", Font.PLAIN, 18));
@@ -257,21 +269,39 @@ public class JPDefault extends JPanel
 		gbc_viewAttendanceData.fill = GridBagConstraints.HORIZONTAL;
 		gbc_viewAttendanceData.anchor = GridBagConstraints.NORTH;
 		gbc_viewAttendanceData.insets = new Insets(10, 15, 5, 5);
-		gbc_viewAttendanceData.gridx = 4;
+		gbc_viewAttendanceData.gridx = 5;
 		gbc_viewAttendanceData.gridy = 1;
-	
-		updateButton.setFont(new Font("Arial", Font.PLAIN, 20));
-		updateButton.setForeground(new Color(0, 128, 0));
-		updateButton.setBackground(new Color(105, 105, 105));
-		updateButton.setFocusPainted(false);
-		updateButton.setContentAreaFilled(false);
-		updateButton.setBorder(new LineBorder(new Color(0, 128, 0), 2, true));
-		GridBagConstraints gbc_updateButton = new GridBagConstraints();
-		gbc_updateButton.anchor = GridBagConstraints.WEST;
-		gbc_updateButton.insets = new Insets(5, 20, 5, 75);
-		gbc_updateButton.gridx = 7;
-		gbc_updateButton.gridy = 5;
 
+		comboBoxA.setForeground(new Color(0, 128, 0));
+		comboBoxA.setBackground(new Color(255, 255, 255));
+		GridBagConstraints gbc_comboBoxA = new GridBagConstraints();
+		gbc_comboBoxA.anchor = GridBagConstraints.WEST;
+		gbc_comboBoxA.insets = new Insets(10, 20, 5, 5);
+		gbc_comboBoxA.gridx = 0;
+		gbc_comboBoxA.gridy = 2;
+		
+		comboBoxB.setForeground(new Color(0, 128, 0));
+		comboBoxB.setBackground(new Color(255, 255, 255));
+		GridBagConstraints gbc_comboBoxB = new GridBagConstraints();
+		gbc_comboBoxB.gridwidth = 2;
+		gbc_comboBoxB.anchor = GridBagConstraints.WEST;
+		gbc_comboBoxB.insets = new Insets(0, 20, 15, 5);
+		gbc_comboBoxB.gridx = 0;
+		gbc_comboBoxB.gridy = 3;
+		
+		helpButton.setFont(new Font("Arial", Font.PLAIN, 10));
+		helpButton.setForeground(new Color(0, 128, 0));
+		helpButton.setBackground(new Color(105, 105, 105));
+		helpButton.setFocusPainted(false);
+		helpButton.setContentAreaFilled(false);
+		helpButton.setBorder(null);
+		setHelpText();
+		GridBagConstraints gbc_helpButton = new GridBagConstraints();
+		gbc_helpButton.anchor = GridBagConstraints.WEST;
+		gbc_helpButton.insets = new Insets(0, 5, 15, 5);
+		gbc_helpButton.gridx = 2;
+		gbc_helpButton.gridy = 3;
+		
 		lblFirstName.setFont(new Font("Arial", Font.PLAIN, 16));
 		lblFirstName.setForeground(new Color(0, 100, 0));
 		GridBagConstraints gbc_lblFirstName = new GridBagConstraints();
@@ -284,6 +314,7 @@ public class JPDefault extends JPanel
 		firstNameField.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField.gridwidth = 2;
 		gbc_textField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.gridx = 1;
 		gbc_textField.gridy = 4;	
@@ -293,7 +324,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_lblLastName = new GridBagConstraints();
 		gbc_lblLastName.anchor = GridBagConstraints.EAST;
 		gbc_lblLastName.insets = new Insets(0, 15, 5, 5);
-		gbc_lblLastName.gridx = 2;
+		gbc_lblLastName.gridx = 3;
 		gbc_lblLastName.gridy = 4;
 		
 		lastNameField.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -301,7 +332,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_lastNameField = new GridBagConstraints();
 		gbc_lastNameField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lastNameField.insets = new Insets(0, 0, 5, 5);
-		gbc_lastNameField.gridx = 3;
+		gbc_lastNameField.gridx = 4;
 		gbc_lastNameField.gridy = 4;
 		
 		lblSCAName.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -309,7 +340,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_lblSCAName = new GridBagConstraints();
 		gbc_lblSCAName.anchor = GridBagConstraints.EAST;
 		gbc_lblSCAName.insets = new Insets(0, 15, 5, 5);
-		gbc_lblSCAName.gridx = 4;
+		gbc_lblSCAName.gridx = 5;
 		gbc_lblSCAName.gridy = 4;
 		
 		SCANameField.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -317,7 +348,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_SCANameField = new GridBagConstraints();
 		gbc_SCANameField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_SCANameField.insets = new Insets(0, 0, 5, 5);
-		gbc_SCANameField.gridx = 5;
+		gbc_SCANameField.gridx = 6;
 		gbc_SCANameField.gridy = 4;
 		
 		lblMemberNumber.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -333,6 +364,7 @@ public class JPDefault extends JPanel
 		memberNumberField.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_memberNumberField = new GridBagConstraints();
 		gbc_memberNumberField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_memberNumberField.gridwidth = 2;
 		gbc_memberNumberField.insets = new Insets(0, 0, 5, 5);
 		gbc_memberNumberField.gridx = 1;
 		gbc_memberNumberField.gridy = 5;
@@ -343,7 +375,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_lblExpDate = new GridBagConstraints();
 		gbc_lblExpDate.anchor = GridBagConstraints.WEST;
 		gbc_lblExpDate.insets = new Insets(0, 15, 5, 5);
-		gbc_lblExpDate.gridx = 2;
+		gbc_lblExpDate.gridx = 3;
 		gbc_lblExpDate.gridy = 5;
 		
 		expDateField.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -351,7 +383,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_expDateField = new GridBagConstraints();
 		gbc_expDateField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_expDateField.insets = new Insets(0, 0, 5, 5);
-		gbc_expDateField.gridx = 3;
+		gbc_expDateField.gridx = 4;
 		gbc_expDateField.gridy = 5;
 		
 		adult.setSelected(true);
@@ -362,7 +394,7 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_adult = new GridBagConstraints();
 		gbc_adult.fill = GridBagConstraints.HORIZONTAL;
 		gbc_adult.insets = new Insets(10, 15, 5, 5);
-		gbc_adult.gridx = 4;
+		gbc_adult.gridx = 5;
 		gbc_adult.gridy = 5;
 		
 		feast.setSelected(false);
@@ -372,20 +404,32 @@ public class JPDefault extends JPanel
 		GridBagConstraints gbc_feast = new GridBagConstraints();
 		gbc_feast.anchor = GridBagConstraints.WEST;
 		gbc_feast.insets = new Insets(10, 5, 5, 5);
-		gbc_feast.gridx = 5;
+		gbc_feast.gridx = 6;
 		gbc_feast.gridy = 5;
 		
-		textField.setForeground(new Color(0, 100, 0));
-		textField.setFont(new Font("Arial", Font.PLAIN, 17));
-		textField.setBackground(new Color(245, 250, 245));
-		textField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2),
+		updateButton.setFont(new Font("Arial", Font.PLAIN, 16));
+		updateButton.setForeground(new Color(0, 128, 0));
+		updateButton.setBackground(new Color(105, 105, 105));
+		updateButton.setFocusPainted(false);
+		updateButton.setContentAreaFilled(false);
+		updateButton.setBorder(new LineBorder(new Color(0, 128, 0), 2, true));
+		GridBagConstraints gbc_updateButton = new GridBagConstraints();
+		gbc_updateButton.anchor = GridBagConstraints.WEST;
+		gbc_updateButton.insets = new Insets(0, 15, 5, 5);
+		gbc_updateButton.gridx = 7;
+		gbc_updateButton.gridy = 4;
+		
+		selectionField.setForeground(new Color(0, 100, 0));
+		selectionField.setFont(new Font("Arial", Font.PLAIN, 17));
+		selectionField.setBackground(new Color(245, 250, 245));
+		selectionField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 128, 0), 2),
                 BorderFactory.createEmptyBorder(2, 20, 2, 2)));
-		GridBagConstraints gbc_textField2 = new GridBagConstraints();
-		gbc_textField2.gridwidth = 8;
-		gbc_textField2.insets = new Insets(15, 50, 15, 50);
-		gbc_textField2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField2.gridx = 0;
-		gbc_textField2.gridy = 6;
+		GridBagConstraints gbc_selectionField = new GridBagConstraints();
+		gbc_selectionField.gridwidth = 10;
+		gbc_selectionField.insets = new Insets(15, 50, 15, 50);
+		gbc_selectionField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_selectionField.gridx = 0;
+		gbc_selectionField.gridy = 6;
 		
 		dataSet.setForeground(Color.BLACK);
 		dataSet.setFont(new Font("Times New Roman", Font.PLAIN, 17));
@@ -404,7 +448,7 @@ public class JPDefault extends JPanel
 		scrollPane.setBorder(new LineBorder(new Color(0, 128, 0), 2));
 		GridBagConstraints gbc_dataSet = new GridBagConstraints();
 		gbc_dataSet.gridheight = 3;
-		gbc_dataSet.gridwidth = 8;
+		gbc_dataSet.gridwidth = 10;
 		gbc_dataSet.gridy = 7;
 		gbc_dataSet.insets = new Insets(0, 20, 20, 20);
 		gbc_dataSet.fill = GridBagConstraints.BOTH;
@@ -417,31 +461,9 @@ public class JPDefault extends JPanel
 		add(clearAttendanceData, gbc_clearAttendanceData);
 		add(exportAttendanceData, gbc_exportAttendanceData);
 		add(viewAttendanceData, gbc_viewAttendanceData);
-		comboBoxA = new JComboBox<String>();
-		comboBoxA.setModel(new DefaultComboBoxModel<String>(new String[] {" Add New", " Delete", " Update"}));
-		
-		comboBoxA.setForeground(new Color(0, 128, 0));
-		comboBoxA.setBackground(new Color(255, 255, 255));
-		GridBagConstraints gbc_comboBoxA = new GridBagConstraints();
-		gbc_comboBoxA.gridwidth = 2;
-		gbc_comboBoxA.anchor = GridBagConstraints.WEST;
-		gbc_comboBoxA.insets = new Insets(10, 20, 5, 5);
-		gbc_comboBoxA.gridx = 0;
-		gbc_comboBoxA.gridy = 2;
 		add(comboBoxA, gbc_comboBoxA);
-		comboBoxB = new JComboBox<String>();
-		comboBoxB.setModel(new DefaultComboBoxModel<String>(new String[] {" Attendee Record", " Membership Record", " Both"}));
-		
-		comboBoxB.setForeground(new Color(0, 128, 0));
-		comboBoxB.setBackground(new Color(255, 255, 255));
-		GridBagConstraints gbc_comboBoxB = new GridBagConstraints();
-		gbc_comboBoxB.gridwidth = 2;
-		gbc_comboBoxB.anchor = GridBagConstraints.WEST;
-		gbc_comboBoxB.insets = new Insets(0, 20, 15, 5);
-		gbc_comboBoxB.gridx = 0;
-		gbc_comboBoxB.gridy = 3;
 		add(comboBoxB, gbc_comboBoxB);
-		add(updateButton, gbc_updateButton);
+		add(helpButton, gbc_helpButton);
 		add(lblFirstName, gbc_lblFirstName);
 		add(firstNameField, gbc_textField);
 		add(lblLastName, gbc_lblLastName);
@@ -454,7 +476,8 @@ public class JPDefault extends JPanel
 		add(expDateField, gbc_expDateField);
 		add(adult, gbc_adult);
 		add(feast, gbc_feast);
-		add(textField, gbc_textField2);
+		add(updateButton, gbc_updateButton);
+		add(selectionField, gbc_selectionField);
 		add(scrollPane, gbc_dataSet);
 	}
 	
@@ -578,8 +601,8 @@ public class JPDefault extends JPanel
 		{
 			public void actionPerformed(ActionEvent onClick) 
 			{	
-				base.changeState(JPViewStates.VIEWDATA);	
 				base.dataRequested = 1;
+				base.changeState(JPViewStates.VIEWDATA);	
 			}
 		});
 		
@@ -587,25 +610,26 @@ public class JPDefault extends JPanel
 		{
 			public void actionPerformed(ActionEvent e) 
 			{
-				if(value != comboBoxA.getSelectedIndex())
-				{
-					value = comboBoxA.getSelectedIndex();
-					if(value == 0)
-					{	updateButton.setText(" Add Record ");	}
-					else
-					{	updateButton.setText(" Delete Record ");	}
-					resetFields();
-					setUpTable();
-				}
+				if(comboBoxA.getSelectedIndex() != valueA)
+				{	updateUpdateButtonText();	}
 			}
 		});
 		
-		textField.getDocument().addDocumentListener(new DocumentListener()
+		comboBoxB.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{	
+				if(comboBoxB.getSelectedIndex() != valueB)
+				{	updateUpdateButtonText();	}
+			}
+		});
+		
+		selectionField.getDocument().addDocumentListener(new DocumentListener()
 		{
             @Override
             public void insertUpdate(DocumentEvent e) 
             {
-                String text = textField.getText();
+                String text = selectionField.getText();
                 if (text.trim().length() == 0) 
                 {	 rowSorter.setRowFilter(null);	} 
                 else 
@@ -614,7 +638,7 @@ public class JPDefault extends JPanel
             @Override
             public void removeUpdate(DocumentEvent e) 
             {
-                String text = textField.getText();
+                String text = selectionField.getText();
                 if (text.trim().length() == 0) 
                 {	rowSorter.setRowFilter(null);	} 
                 else 
@@ -632,15 +656,22 @@ public class JPDefault extends JPanel
 				assignValues();
 				boolean result = false;
 				boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
-				boolean SCA = SCAName.length() > 1;
-				if(!(firstAndLast || SCA))
+				if(!firstAndLast)
 				{	JOptionPane.showMessageDialog(JPController.errorPanel, "Missing Required Information", "Error", JOptionPane.ERROR_MESSAGE);	}
 				else
 				{
-					switch(value)
+					switch(valueA)
 					{
 						case 0:
-							result = base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+							switch(valueB)
+							{
+								case 0:
+									result = base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+									break;
+								case 1:
+									result = base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+									break;
+							}
 							break;
 						case 1:
 							result = base.deleteAttendanceData(lastName, firstName);
@@ -677,7 +708,7 @@ public class JPDefault extends JPanel
 		expDateField.setText("");
 		adult.setSelected(true);
 		feast.setSelected(false);
-		textField.setText("");
+		selectionField.setText("");
 	}
 	
 	private void updateFields()
@@ -692,22 +723,7 @@ public class JPDefault extends JPanel
 	
 	private void updateValues()
 	{
-		if(value == 0)
-		{
-			int row = dataSet.getSelectedRow();
-			lastName = (String) dataSet.getValueAt(row, 0);
-			firstName = (String) dataSet.getValueAt(row, 1);
-			SCAName = (String) dataSet.getValueAt(row, 2);
-			Integer temp = (Integer) dataSet.getValueAt(row, 3);
-			membershipNumber = "" + temp.intValue();
-			expirationDate = (String) dataSet.getValueAt(row, 4);
-			temp = (Integer) dataSet.getValueAt(row, 5);
-			if(temp.intValue() == 1)
-			{	isAdult = true;	}
-			else
-			{	isAdult = false;	}
-		}
-		else
+		if(valueB == 0)
 		{
 			int row = dataSet.getSelectedRow();
 			lastName = (String) dataSet.getValueAt(row, 0);
@@ -721,9 +737,108 @@ public class JPDefault extends JPanel
 			if(tempInteger.intValue() == 1)
 			{	hadFeast = true;	}
 			else
-			{	hadFeast = false;	}
+			{	hadFeast = false;	}	
+		}
+		else
+		{	
+			int row = dataSet.getSelectedRow();
+			lastName = (String) dataSet.getValueAt(row, 0);
+			firstName = (String) dataSet.getValueAt(row, 1);
+			SCAName = (String) dataSet.getValueAt(row, 2);
+			Integer temp = (Integer) dataSet.getValueAt(row, 3);
+			membershipNumber = "" + temp.intValue();
+			expirationDate = (String) dataSet.getValueAt(row, 4);
+			temp = (Integer) dataSet.getValueAt(row, 5);
+			if(temp.intValue() == 1)
+			{	isAdult = true;	}
+			else
+			{	isAdult = false;	}
 		}
 		updateFields();
+	}
+	
+	private void updateUpdateButtonText()
+	{
+		valueA = comboBoxA.getSelectedIndex();
+		valueB = comboBoxB.getSelectedIndex();
+		String newText = null;
+		switch(valueA)
+		{
+			case 0:
+				newText = " Add Record";
+				break;
+			case 1:
+				newText = " Delete Record";
+				break;
+			case 2:
+				newText = " Update Record";
+				break;
+		}
+		if(valueB == 2)
+		{	newText += "s";	}
+		newText += " ";
+		updateButton.setText(newText);
+		resetFields();
+		setUpTable();
+	}
+	
+	private void setHelpText()
+	{
+		String newText = "";
+		switch(valueA)
+		{
+			case 0:
+				switch(valueB)
+				{
+					case 0:
+						newText = "Add an attendance record. "
+								+ "It will automatically detect if someone is a member through their first and last or SCA name. "
+								+ "Ignores the member # and exp. date fields. "
+								+ "Will not update any information for existing records.";
+						break;
+					case 1:
+						newText = "Add a membership record. "
+								+ "Will add a new member so long as a member with the same first and last names doesn't already exist.";
+						break;
+					case 2:
+						newText = "Add new membership and attendance records for the same person.";
+						break;
+				}
+				break;
+			case 1:
+				switch(valueB)
+				{
+					case 0:
+						newText = "Delete an attendance record.";
+						break;
+					case 1:
+						newText = "Delete a membership record. Does not change any existing attendance records.";
+						break;
+					case 2:
+						newText = "Delete a membership record as well as any attendance records they may have.";
+						break;
+				}
+				break;
+			case 2:
+				switch(valueB)
+				{
+					case 0:
+						newText = "Update information for an attendance record. "
+								+ "Ignores any fields not stored in an attendance record. "
+								+ "Does not ignore any empty fields usually stored in attendance records.";
+						break;
+					case 1:
+						newText = "Update information for a membership record."
+								+ "Ignores any fields not stored in a membership record. "
+								+ "Does not ignore any empty fields usually stored in membership records.";
+						break;
+					case 2:
+						newText = "Update a membership record as well as any attendance records they may have.";
+						break;
+				}
+				break;
+		}
+		helpButton.setToolTipText(newText);
 	}
 	
 	private void resetValues()

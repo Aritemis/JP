@@ -233,23 +233,58 @@ public class JPSQLiteData
 		return res;
 	}
 
-	public void addMember(String firstName, String lastName, String SCAName, int membershipNumber, String expirationDate, boolean isAnAdult)
+	public boolean addMember(String firstName, String lastName, String SCAName, int membershipNumber, String expirationDate, boolean isAnAdult)
 	{
+		boolean result = false;
 		if (con == null)
 		{	getConnection();	}
 		try 
 		{
-			PreparedStatement preparedStatement;
-			preparedStatement = con.prepareStatement("INSERT INTO MEMBERDATA VALUES( ?, ?, ?, ?, ?, ?);");
-			preparedStatement.setString(1, firstName);
-			preparedStatement.setString(2, lastName);
-			preparedStatement.setString(3, SCAName);
-			preparedStatement.setInt(4, membershipNumber);
-			preparedStatement.setString(5, expirationDate);
-			preparedStatement.setBoolean(6, isAnAdult);
-			preparedStatement.execute();
+			if(recordExists(lastName, firstName, 0))
+			{	JOptionPane.showMessageDialog(JPController.errorPanel, "That person is already a member.", "Error", JOptionPane.ERROR_MESSAGE);	}
+			else
+			{
+				PreparedStatement preparedStatement;
+				preparedStatement = con.prepareStatement("INSERT INTO MEMBERDATA VALUES( ?, ?, ?, ?, ?, ?);");
+				preparedStatement.setString(1, firstName);
+				preparedStatement.setString(2, lastName);
+				preparedStatement.setString(3, SCAName);
+				preparedStatement.setInt(4, membershipNumber);
+				preparedStatement.setString(5, expirationDate);
+				preparedStatement.setBoolean(6, isAnAdult);
+				preparedStatement.execute();
+				result = true;
+			}
 		} 
-		catch (SQLException e) {e.printStackTrace();}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(JPController.errorPanel, "Invalid input.", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		return result;
+	}
+	
+	public boolean deleteMember(String lastName, String firstName)
+	{
+		boolean result = false;
+		try 
+		{
+			if(recordExists(lastName, firstName, 0))
+			{
+				String statement = "DELETE FROM MEMBERDATA WHERE lastName = ? AND firstName = ?";
+				PreparedStatement preparedStatement = con.prepareStatement(statement);
+				preparedStatement.setString(1, lastName);
+				preparedStatement.setString(2, firstName);
+				preparedStatement.executeUpdate();
+				JPController.clearTotals();
+				getTotals();
+				result = true;
+			}
+			else
+			{	JOptionPane.showMessageDialog(JPController.errorPanel, "No such member.", "Error", JOptionPane.ERROR_MESSAGE);	}
+		}
+		catch (SQLException e) {	e.printStackTrace();	}
+		return result;
 	}
 	
 	public boolean addAttendee(String lastName, String firstName, boolean isAnAdult, boolean hadFeast)

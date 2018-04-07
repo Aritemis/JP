@@ -42,15 +42,6 @@ public class JPController
 		state = nextState;
 		frame.updateState(state);
 	}
-	
-	public void importMembers(File file)
-	{	
-		int result = database.importMembers(file);	
-		if(result == -1)
-		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully imported.", "", JOptionPane.INFORMATION_MESSAGE);	}
-		else
-		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
-	}
 		
 	public void clearMemberData()
 	{	database.clearMemberData();	}
@@ -58,11 +49,26 @@ public class JPController
 	public ResultSet getMemberData()
 	{	return database.getMemberData();	}
 	
+	public boolean addMemberData(String lastName, String firstName, String SCAName, int membershipNumber, String expirationDate,  boolean isAdult)
+	{	return database.addMember(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);	}
+	
+	public boolean deleteMemberData(String lastName, String firstName)
+	{	return database.deleteMember(lastName, firstName);	}
+	
 	public void exportMembers(JTable table, File file)
 	{
 		boolean result = database.exportMembers(table, file);	
 		if(result)
 		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		else
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+	}
+	
+	public void importMembers(File file)
+	{	
+		int result = database.importMembers(file);	
+		if(result == -1)
+		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully imported.", "", JOptionPane.INFORMATION_MESSAGE);	}
 		else
 		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
 	}
