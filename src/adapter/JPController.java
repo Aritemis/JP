@@ -15,6 +15,7 @@ import view.Frame;
 public class JPController 
 {
 	public static JPanel errorPanel;
+	public int dataRequested;
 	public static int people;
 	public static int members;
 	public static int adults;
@@ -28,6 +29,7 @@ public class JPController
 	public void start()
 	{
 		errorPanel = new JPanel();
+		dataRequested = 0;
 		clearTotals();
 		database = new JPSQLiteData(this);
 		database.getTotals();
@@ -55,6 +57,15 @@ public class JPController
 	
 	public ResultSet getMemberData()
 	{	return database.getMemberData();	}
+	
+	public void exportMembers(JTable table, File file)
+	{
+		boolean result = database.exportMembers(table, file);	
+		if(result)
+		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		else
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+	}
 	
 	public void clearAttendaceData()
 	{	database.clearAttendanceData();	}
@@ -84,7 +95,5 @@ public class JPController
 		adults = 0;
 		feasts = 0;
 	}
-	
-
 
 }
