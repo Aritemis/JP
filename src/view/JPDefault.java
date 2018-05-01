@@ -140,13 +140,14 @@ public class JPDefault extends JPanel
 		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, value));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
+		dataSet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
-		dataSet.setRowSorter(rowSorter);
 		selectionField = new JTextField();
+		dataSet.setRowSorter(rowSorter);
 		listSelectionModel = dataSet.getSelectionModel();
 		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
-        dataSet.setSelectionModel(listSelectionModel);
+		listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+		dataSet.setSelectionModel(listSelectionModel);
         
         resetValues();
         removeAll();
@@ -765,7 +766,7 @@ public class JPDefault extends JPanel
 	
 	private void updateValues()
 	{
-		if(valueA != 2 && valueB == 0)
+		if(valueA != 2 && valueB == 1)
 		{
 			int row = dataSet.getSelectedRow();
 			lastName = (String) dataSet.getValueAt(row, 0);
@@ -803,6 +804,7 @@ public class JPDefault extends JPanel
 	{
 		valueA = comboBoxA.getSelectedIndex();
 		valueB = comboBoxB.getSelectedIndex();
+		System.out.println(valueA + " " + valueB);
 		String newText = null;
 		switch(valueA)
 		{
@@ -891,7 +893,7 @@ public class JPDefault extends JPanel
 		hadFeast = false;
 	}
 	
-	private class SharedListSelectionHandler implements ListSelectionListener 
+	class SharedListSelectionHandler implements ListSelectionListener 
 	{		
 	    public void valueChanged(ListSelectionEvent e) 
 	    {

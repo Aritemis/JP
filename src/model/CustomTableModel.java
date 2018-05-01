@@ -21,6 +21,7 @@ public class CustomTableModel extends DefaultTableModel
 	public boolean isCellEditable(int row, int column)
     {	return false;  }
 	
+	
 	public static CustomTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException 
 	{	
 	    Vector<String> columnNames = new Vector<String>();

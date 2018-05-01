@@ -22,14 +22,16 @@ import javax.swing.JTable;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import adapter.JPController;
 import adapter.JPViewStates;
 import model.CustomTableModel;
-
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -41,6 +43,7 @@ public class JPViewRecords extends JPanel
 	private GridBagLayout layout;
 	private JButton backButton;
 	private JTable dataSet;
+	private ListSelectionModel listSelectionModel;
 	private JScrollPane scrollPane;
     private TableRowSorter<TableModel> rowSorter;
     private JTextField textField;
@@ -63,8 +66,13 @@ public class JPViewRecords extends JPanel
 		{	dataSet = new JTable(CustomTableModel.buildTableModel(res, value));	}
 		catch (SQLException e) { e.printStackTrace(); }
 		
+		dataSet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		rowSorter = new TableRowSorter<>(dataSet.getModel());
 		dataSet.setRowSorter(rowSorter);
+		listSelectionModel = dataSet.getSelectionModel();
+		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+		dataSet.setSelectionModel(listSelectionModel);
 		textField = new JTextField();
 		totalLabel = new JLabel("People: " + JPController.people 
 							+ "   Members: " + JPController.members 
@@ -186,4 +194,15 @@ public class JPViewRecords extends JPanel
             {	throw new UnsupportedOperationException("Not supported."); }
         });
 	}
+	
+	class SharedListSelectionHandler implements ListSelectionListener 
+	{		
+	    public void valueChanged(ListSelectionEvent e) 
+	    {
+	        ListSelectionModel lsm = (ListSelectionModel)e.getSource();;
+	        if (lsm.isSelectionEmpty()){	} 
+	        else{	}
+	    }
+	}
+	
 }
