@@ -24,6 +24,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -71,14 +72,13 @@ public class JPViewRecords extends JPanel
 		dataSet.setRowSorter(rowSorter);
 		listSelectionModel = dataSet.getSelectionModel();
 		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+		listSelectionModel.addListSelectionListener(new DefaultTableColumnModel());
 		dataSet.setSelectionModel(listSelectionModel);
 		textField = new JTextField();
-		totalLabel = new JLabel("People: " + JPController.people 
-							+ "   Members: " + JPController.members 
-							+ "   Adults: " + JPController.adults 
-							+ "   Feasts: " + JPController.feasts);
-		
+		totalLabel = new JLabel("People: "  + JPController.people
+						   + "   Members: " + JPController.members
+						   + "   Adults: "  + JPController.adults
+						   + "   Feasts: "  + JPController.feasts);
 		setUpLayout();
 		setUpListeners();
 	}
@@ -158,13 +158,10 @@ public class JPViewRecords extends JPanel
 	
 	private void setUpListeners() 
 	{
-		backButton.addActionListener(new ActionListener() 
+		backButton.addActionListener(onClick ->
 		{
-			public void actionPerformed(ActionEvent onClick)
-			{	
-				base.changeState(JPViewStates.DEFAULT);
-				base.dataRequested = 0;
-			}
+			base.changeState(JPViewStates.DEFAULT);
+			base.dataRequested = 0;
 		});
 		
 		textField.getDocument().addDocumentListener(new DocumentListener()
@@ -193,16 +190,6 @@ public class JPViewRecords extends JPanel
             public void changedUpdate(DocumentEvent e) 
             {	throw new UnsupportedOperationException("Not supported."); }
         });
-	}
-	
-	class SharedListSelectionHandler implements ListSelectionListener 
-	{		
-	    public void valueChanged(ListSelectionEvent e) 
-	    {
-	        ListSelectionModel lsm = (ListSelectionModel)e.getSource();;
-	        if (lsm.isSelectionEmpty()){	} 
-	        else{	}
-	    }
 	}
 	
 }

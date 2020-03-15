@@ -16,12 +16,11 @@ public class JPController
 {
 	public static JPanel errorPanel;
 	public int dataRequested;
-	public static int people;
-	public static int members;
-	public static int adults;
-	public static int feasts;
-	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership #", "Expiration Date", "Is An Adult"};
-	public static String[] attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attending Feast"};
+	public static int people, members, adults, feasts;
+	public static String[] memberDataTableHeader = {"Last Name", "First Name", "SCA Name", "Membership #", "Expiration Date", "Is An Adult"},
+			attendanceDataTableHeader = {"Last Name", "First Name", "Is An Adult", "Is A Member", "Attending Feast"};
+	// Would probably use enums for tables with String[] values representing headers
+	// if this were a larger/more serious program (if I weren't doing it for free).
 	private JPSQLiteData database;
 	private Frame frame;
 	private JPViewStates state;
@@ -31,7 +30,7 @@ public class JPController
 		errorPanel = new JPanel();
 		dataRequested = 0;
 		clearTotals();
-		database = new JPSQLiteData(this);
+		database = new JPSQLiteData();
 		database.getTotals();
 		frame = new Frame(this);
 		state = JPViewStates.DEFAULT;
@@ -57,11 +56,11 @@ public class JPController
 	
 	public void exportMembers(JTable table, File file)
 	{
-		boolean result = database.exportMembers(table, file);	
+		boolean result = database.exportMembers(table, file);
 		if(result)
 		{	JOptionPane.showMessageDialog(errorPanel, "Member data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
 		else
-		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong.", "", JOptionPane.ERROR_MESSAGE);	}
 	}
 	
 	public void importMembers(File file)
@@ -89,17 +88,12 @@ public class JPController
 	{
 		boolean result = database.exportAttendanceData(table, file);
 		if(result)
-		{	JOptionPane.showMessageDialog(errorPanel, "Attendace data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
+		{	JOptionPane.showMessageDialog(errorPanel, "Attendance data successfully exported.", "", JOptionPane.INFORMATION_MESSAGE);	}
 		else
-		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong at line " + result + ".", "", JOptionPane.ERROR_MESSAGE);	}
+		{	JOptionPane.showMessageDialog(errorPanel, "Something went wrong.", "", JOptionPane.ERROR_MESSAGE);	}
 	}
 	
 	public static void clearTotals()
-	{
-		people = 0;
-		members = 0;
-		adults = 0;
-		feasts = 0;
-	}
+	{ people = 0; members = 0; adults = 0; feasts = 0; }
 
 }

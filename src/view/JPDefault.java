@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -146,7 +147,7 @@ public class JPDefault extends JPanel
 		dataSet.setRowSorter(rowSorter);
 		listSelectionModel = dataSet.getSelectionModel();
 		listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+		listSelectionModel.addListSelectionListener(new DefaultTableColumnModel());
 		dataSet.setSelectionModel(listSelectionModel);
         
         resetValues();
@@ -484,145 +485,117 @@ public class JPDefault extends JPanel
 	
 	private void setUpListeners() 
 	{	
-		clearMemberData.addActionListener(new ActionListener() 
+		clearMemberData.addActionListener(onClick ->
 		{
-			public void actionPerformed(ActionEvent onClick) 
+			JPanel temp = new JPanel();
+			int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all member data from the database?");
+			if(valueReturned == JOptionPane.OK_OPTION)
+			{	base.clearMemberData();	}
+		});
+		
+		exportMemberData.addActionListener(onClick ->
+		{
+			JPanel temp = new JPanel();
+			fileChoose.setFileFilter(new FileFilter()
 			{
-				JPanel temp = new JPanel();
-				int valueReturned = JOptionPane.showConfirmDialog(temp, "Are you sure you want to clear all member data from the database?");
+				@Override
+				public boolean accept(File f)
+				{	return f.getName().endsWith(".csv");	}
+				@Override
+				public String getDescription()
+				{	return "CSV files";	}
+			});
+			File defaultFile = new File("newFile.csv");
+			fileChoose.setSelectedFile(defaultFile);
+			int valueReturned = fileChoose.showOpenDialog(temp);
+			if(valueReturned == JFileChooser.APPROVE_OPTION)
+			{
+				JTable dataSet = new JTable();
+				ResultSet res = base.getMemberData();
+				try
+				{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 0));	}
+				catch (SQLException e) { e.printStackTrace(); }
+				base.exportMembers(dataSet, fileChoose.getSelectedFile());
+			}
+		});
+		
+		viewMemberData.addActionListener(onClick -> base.changeState(JPViewStates.VIEWDATA));
+		
+		importMembers.addActionListener(onClick ->
+		{
+			fileChoose.setFileFilter(new FileFilter()
+			{
+				@Override
+				public boolean accept(File f)
+				{	return f.getName().endsWith(".csv") || f.getName().endsWith(".txt");	}
+				@Override
+				public String getDescription()
+				{	return "CSV files";	}
+			});
+			int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
+			if(valueReturned == JFileChooser.APPROVE_OPTION)
+			{
+				base.importMembers(fileChoose.getSelectedFile());
+				setUpTable();
+			}
+		});
+		
+		clearAttendanceData.addActionListener(onClick ->
+		{
+			int valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Are you sure you want to clear all attendance data from the database?");
+			if(valueReturned == JOptionPane.OK_OPTION)
+			{
+				base.clearAttendaceData();
+				setUpTable();
+			}
+		});
+		
+		exportAttendanceData.addActionListener(onClick ->
+		{
+			fileChoose.setFileFilter(new FileFilter()
+			{
+				@Override
+				public boolean accept(File f)
+				{	return f.getName().endsWith(".csv");	}
+				@Override
+				public String getDescription()
+				{	return "CSV files";	}
+			});
+			File defaultFile = new File("newFile.csv");
+			fileChoose.setSelectedFile(defaultFile);
+			int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
+			if(valueReturned == JFileChooser.APPROVE_OPTION)
+			{
+				JTable dataSet = new JTable();
+				ResultSet res = base.getAttendanceData();
+				try
+				{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
+				catch (SQLException e) { e.printStackTrace(); }
+				System.out.println(fileChoose.getSelectedFile().getPath());
+				File newFile = fileChoose.getSelectedFile();
+				valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Do you also wish to clear existing data?");
 				if(valueReturned == JOptionPane.OK_OPTION)
 				{	base.clearMemberData();	}
+				base.exportAttendaceData(dataSet, newFile);
 			}
 		});
 		
-		exportMemberData.addActionListener(new ActionListener()
+		viewAttendanceData.addActionListener(onClick ->
 		{
-			public void actionPerformed(ActionEvent onClick)
-			{
-				JPanel temp = new JPanel();
-			    fileChoose.setFileFilter(new FileFilter() 
-			    {
-			        @Override
-			        public boolean accept(File f) 
-			        {	return f.getName().endsWith(".csv");	}
-			        @Override
-			        public String getDescription() 
-			        {	return "CSV files";	}
-			    });
-			    File defaultFile = new File("newFile.csv");
-			    fileChoose.setSelectedFile(defaultFile);
-				int valueReturned = fileChoose.showOpenDialog(temp);
-				if(valueReturned == JFileChooser.APPROVE_OPTION)
-				{
-					JTable dataSet = new JTable();
-					ResultSet res = base.getMemberData();
-					try 
-					{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 0));	}
-					catch (SQLException e) { e.printStackTrace(); }
-					base.exportMembers(dataSet, fileChoose.getSelectedFile());
-				}
-			}
+			base.dataRequested = 1;
+			base.changeState(JPViewStates.VIEWDATA);
 		});
 		
-		viewMemberData.addActionListener(new ActionListener() 
+		comboBoxA.addActionListener(e ->
 		{
-			public void actionPerformed(ActionEvent onClick) 
-			{	base.changeState(JPViewStates.VIEWDATA);	}
+			if(comboBoxA.getSelectedIndex() != valueA)
+			{	updateUpdateButtonText();	}
 		});
 		
-		importMembers.addActionListener(new ActionListener() 
+		comboBoxB.addActionListener(e ->
 		{
-			public void actionPerformed(ActionEvent onClick) 
-			{
-			    fileChoose.setFileFilter(new FileFilter() 
-			    {
-			        @Override
-			        public boolean accept(File f) 
-			        {	return f.getName().endsWith(".csv") || f.getName().endsWith(".txt");	}
-			        @Override
-			        public String getDescription() 
-			        {	return "CSV files";	}
-			    });
-				int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
-				if(valueReturned == JFileChooser.APPROVE_OPTION)
-				{	
-					base.importMembers(fileChoose.getSelectedFile());	
-					setUpTable();
-				}
-			}
-		});
-		
-		clearAttendanceData.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent onClick) 
-			{
-				int valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Are you sure you want to clear all attendance data from the database?");
-				if(valueReturned == JOptionPane.OK_OPTION)
-				{	
-					base.clearAttendaceData();	
-					setUpTable();
-				}
-			}
-		});
-		
-		exportAttendanceData.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent onClick)
-			{
-			    fileChoose.setFileFilter(new FileFilter() 
-			    {
-			        @Override
-			        public boolean accept(File f) 
-			        {	return f.getName().endsWith(".csv");	}
-			        @Override
-			        public String getDescription() 
-			        {	return "CSV files";	}
-			    });
-			    File defaultFile = new File("newFile.csv");
-			    fileChoose.setSelectedFile(defaultFile);
-				int valueReturned = fileChoose.showOpenDialog(JPController.errorPanel);
-				if(valueReturned == JFileChooser.APPROVE_OPTION)
-				{
-					JTable dataSet = new JTable();
-					ResultSet res = base.getAttendanceData();
-					try 
-					{	dataSet = new JTable(CustomTableModel.buildTableModel(res, 1));	}
-					catch (SQLException e) { e.printStackTrace(); }
-					System.out.println(fileChoose.getSelectedFile().getPath());
-					File newFile = fileChoose.getSelectedFile();
-					valueReturned = JOptionPane.showConfirmDialog(JPController.errorPanel, "Do you also wish to clear existing data?");
-					if(valueReturned == JOptionPane.OK_OPTION)
-					{	base.clearMemberData();	}
-					base.exportAttendaceData(dataSet, newFile);
-				}
-			}
-		});
-		
-		viewAttendanceData.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent onClick) 
-			{	
-				base.dataRequested = 1;
-				base.changeState(JPViewStates.VIEWDATA);	
-			}
-		});
-		
-		comboBoxA.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent e) 
-			{
-				if(comboBoxA.getSelectedIndex() != valueA)
-				{	updateUpdateButtonText();	}
-			}
-		});
-		
-		comboBoxB.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent e) 
-			{	
-				if(comboBoxB.getSelectedIndex() != valueB)
-				{	updateUpdateButtonText();	}
-			}
+			if(comboBoxB.getSelectedIndex() != valueB)
+			{	updateUpdateButtonText();	}
 		});
 		
 		selectionField.getDocument().addDocumentListener(new DocumentListener()
@@ -650,79 +623,74 @@ public class JPDefault extends JPanel
             {	throw new UnsupportedOperationException("Not supported."); }
         });
 		
-		updateButton.addActionListener(new ActionListener() 
+		updateButton.addActionListener(onClick ->
 		{
-			public void actionPerformed(ActionEvent onClick)
-			{	
+			assignValues();
+			boolean result = false;
+			boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
+			if(firstAndLast)
+			{
+				switch(valueA)
+				{
+					case 0:
+						switch(valueB)
+						{
+							case 0:
+								result = base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+								break;
+							case 1:
+								result = base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+								break;
+							case 2:
+								result = true;
+								base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+								base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+								break;
+						}
+						break;
+					case 1:
+						switch(valueB)
+						{
+							case 0:
+								result = base.deleteAttendanceData(lastName, firstName);
+								break;
+							case 1:
+								result = base.deleteMemberData(lastName, firstName);
+								break;
+							case 2:
+								result = true;
+								base.deleteAttendanceData(lastName, firstName);
+								base.deleteMemberData(lastName, firstName);
+								break;
+						}
+						break;
+					case 2:
+						result = true;
+						switch(valueB)
+						{
+							case 0:
+								base.deleteAttendanceData(lastName, firstName);
+								base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+								break;
+							case 1:
+								base.deleteMemberData(lastName, firstName);
+								base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+								break;
+							case 2:
+								base.deleteAttendanceData(lastName, firstName);
+								base.deleteMemberData(lastName, firstName);
+								base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
+								base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
+								break;
+						}
+						break;
+				}
+			}
+			if(result)
+			{
+				resetFields();
 				assignValues();
-				boolean result = false;
-				boolean firstAndLast = firstName.length() > 1 && lastName.length() > 1;
-				if(!firstAndLast)
-				{	}
-				else
-				{
-					switch(valueA)
-					{
-						case 0:
-							switch(valueB)
-							{
-								case 0:
-									result = base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
-									break;
-								case 1:
-									result = base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
-									break;
-								case 2:
-									result = true;
-									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
-									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
-									break;
-							}
-							break;
-						case 1:
-							switch(valueB)
-							{
-								case 0:
-									result = base.deleteAttendanceData(lastName, firstName);
-									break;
-								case 1:
-									result = base.deleteMemberData(lastName, firstName);
-									break;
-								case 2:
-									result = true;
-									base.deleteAttendanceData(lastName, firstName);
-									base.deleteMemberData(lastName, firstName);
-									break;
-							}
-							break;
-						case 2:
-							result = true;
-							switch(valueB)
-							{
-								case 0:
-									base.deleteAttendanceData(lastName, firstName);
-									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
-									break;
-								case 1:
-									base.deleteMemberData(lastName, firstName);
-									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
-									break;
-								case 2:
-									base.deleteAttendanceData(lastName, firstName);
-									base.deleteMemberData(lastName, firstName);
-									base.addMemberData(lastName, firstName, SCAName, membershipNumber, expirationDate, isAdult);
-									base.addAttendanceData(lastName, firstName, isAdult, hadFeast);
-									break;
-							}
-							break;
-					}
-				}
-				if(result)
-				{
-					resetFields();
-					assignValues();
-					setUpTable();
-				}
+				setUpTable();
 			}
 		});
 	}
@@ -772,15 +740,9 @@ public class JPDefault extends JPanel
 			lastName = (String) dataSet.getValueAt(row, 0);
 			firstName = (String) dataSet.getValueAt(row, 1);
 			Integer tempInteger = (Integer) dataSet.getValueAt(row, 2);
-			if(tempInteger.intValue() == 1)
-			{	isAdult = true;	}
-			else
-			{	isAdult = false;	}
+			isAdult = tempInteger == 1;
 			tempInteger = (Integer) dataSet.getValueAt(row, 4);
-			if(tempInteger.intValue() == 1)
-			{	hadFeast = true;	}
-			else
-			{	hadFeast = false;	}	
+			hadFeast = tempInteger == 1;
 		}
 		else
 		{	
@@ -789,13 +751,10 @@ public class JPDefault extends JPanel
 			firstName = (String) dataSet.getValueAt(row, 1);
 			SCAName = (String) dataSet.getValueAt(row, 2);
 			Integer temp = (Integer) dataSet.getValueAt(row, 3);
-			membershipNumber = temp.intValue();
+			membershipNumber = temp;
 			expirationDate = (String) dataSet.getValueAt(row, 4);
 			temp = (Integer) dataSet.getValueAt(row, 5);
-			if(temp.intValue() == 1)
-			{	isAdult = true;	}
-			else
-			{	isAdult = false;	}
+			isAdult = temp == 1;
 		}
 		updateFields();
 	}
@@ -891,17 +850,6 @@ public class JPDefault extends JPanel
 		expirationDate = "";
 		isAdult = true;
 		hadFeast = false;
-	}
-	
-	class SharedListSelectionHandler implements ListSelectionListener 
-	{		
-	    public void valueChanged(ListSelectionEvent e) 
-	    {
-	        ListSelectionModel lsm = (ListSelectionModel)e.getSource();;
-	        if (lsm.isSelectionEmpty()){	} 
-	        else 
-	        {	updateValues();	}
-	    }
 	}
 	
 }

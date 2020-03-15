@@ -23,14 +23,11 @@ import adapter.JPController;
 
 public class JPSQLiteData
 {
-	@SuppressWarnings("unused")
-	private JPController base;
 	private static Connection con;
 	public static boolean hasData;
 
-	public JPSQLiteData(JPController base)
+	public JPSQLiteData()
 	{
-		this.base = base;
 		hasData = false;
 		getConnection();
 		initial();
@@ -46,12 +43,9 @@ public class JPSQLiteData
 				while(res.next())
 				{
 					JPController.people++;
-					if(res.getBoolean("isAnAdult"))
-					{	JPController.adults++;	}
-					if(res.getBoolean("isMember"))
-					{	JPController.members++;	}
-					if(res.getBoolean("hadFeast"))
-					{	JPController.feasts++;	}
+					JPController.adults  += res.getBoolean("isAnAdult") ? 1 : 0;
+					JPController.members += res.getBoolean("isMember")  ? 1 : 0;
+					JPController.feasts  += res.getBoolean("hadFeast")  ? 1 : 0;
 				}
 			} 
 			catch (SQLException e) {	e.printStackTrace();	}
@@ -61,14 +55,13 @@ public class JPSQLiteData
 	public int importMembers(File csvFile)
 	{
 		//lastName, firstName, SCAName, membershipNumber, expirationDate, isAnAdult
-
-        BufferedReader br = null;
-        String line = "";
+		BufferedReader br = null;
+        String line;
         String delimiter = ",";
         int currentLine = 0;
             try 
             {
-                br = new BufferedReader(new FileReader(csvFile));
+            	br = new BufferedReader(new FileReader(csvFile));
                 while ((line = br.readLine()) != null) 
                 {
                 	currentLine++;
@@ -77,7 +70,7 @@ public class JPSQLiteData
                    // System.out.println(values[3]);
                     try
                     {	membershipNumber = Integer.parseInt(values[3]);	}
-                    catch(NumberFormatException e){	}
+                    catch(NumberFormatException ignored){ }
                     try
                     {
                         String lastName = values[0].trim();
@@ -97,25 +90,27 @@ public class JPSQLiteData
                         }
                         addMember(lastName, firstName, SCAName, membershipNumber, expirationDate, isAnAdult);
                     }
-                    catch(NumberFormatException e){	}
+                    catch(NumberFormatException ignored){ }
                     /*
                      *  Skips the line if this happens because it is almost certainly a header.
                      *  
-                     *  If this program were to be used by more than one computer literate person I would have more 
-                     *  checks, but that isn't the case so I won't worry about it unless I have some down time later.
+                     *  If I were being paid or this program were to be used by people other than
+                     *  Jerry, then I would have more checks. But that isn't the case so I won't
+                     *  worry about it unless I have some down time later.
+                     *
                      */
                 }
                 currentLine = -1;
             } 
-            catch (IOException | SQLException e){	e.printStackTrace();	} 
+            catch (IOException | SQLException e){ e.printStackTrace(); }
             finally 
             {
                 if (br != null) 
                 {
                     try 
-                    {	br.close();	} 
+                    { br.close(); }
                     catch (IOException e) 
-                    {	 e.printStackTrace();	}
+                    { e.printStackTrace(); }
                 }
             }
         return currentLine;
@@ -124,21 +119,22 @@ public class JPSQLiteData
 	public boolean exportMembers(JTable tableToExport, File newFile)
 	{
 		boolean result = true;
-		try {
-
+		try
+		{
 	        TableModel model = tableToExport.getModel();
 	        FileWriter csv = new FileWriter(newFile);
-	        String fileContent = new String("");
+	        String fileContent = "";
 
-	        for (int i = 0; i < model.getColumnCount(); i++) 
-	        {	fileContent = fileContent + JPController.memberDataTableHeader[i] + ",";	}
-	        fileContent = fileContent + "\n";
-
-	        for (int i = 0; i < model.getRowCount(); i++) 
+	        for (int row = 0; row < model.getRowCount(); row++)
 	        {
-	            for (int j = 0; j < model.getColumnCount(); j++) 
-	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
-	            fileContent = fileContent + "\n";
+	            for (int col = 0; col < model.getColumnCount(); col++)
+				{
+					if(row == 0)
+					{ fileContent += JPController.memberDataTableHeader[row] + ","; }
+					else
+					{ fileContent += model.getValueAt(row, col).toString() + ","; }
+				}
+	            fileContent += "\n";
 	        }
 	        csv.write(fileContent);
 	        csv.close();
@@ -182,22 +178,23 @@ public class JPSQLiteData
 	public boolean exportAttendanceData(JTable tableToExport, File newFile)
 	{
 		boolean result = true;
-		try {
-
+		try
+		{
 	        TableModel model = tableToExport.getModel();
 	        FileWriter csv = new FileWriter(newFile);
-	        String fileContent = new String("");
+	        String fileContent = "";
 
-	        for (int i = 0; i < model.getColumnCount(); i++) 
-	        {	fileContent = fileContent + JPController.attendanceDataTableHeader[i] + ",";	}
-	        fileContent = fileContent + "\n";
-
-	        for (int i = 0; i < model.getRowCount(); i++) 
-	        {
-	            for (int j = 0; j < model.getColumnCount(); j++) 
-	            {	fileContent = fileContent + model.getValueAt(i, j).toString() + ",";	}
-	            fileContent = fileContent + "\n";
-	        }
+			for (int row = 0; row < model.getRowCount(); row++)
+			{
+				for (int col = 0; col < model.getColumnCount(); col++)
+				{
+					if(row == 0)
+					{ fileContent += JPController.attendanceDataTableHeader[row] + ","; }
+					else
+					{ fileContent += model.getValueAt(row, col).toString() + ","; }
+				}
+				fileContent += "\n";
+			}
 	        csv.write(fileContent);
 	        csv.close();
 	    } 
@@ -356,7 +353,7 @@ public class JPSQLiteData
 	private boolean userExists(String firstName, String lastName, int membershipNumber)
 	{
 		boolean result = false;
-		ResultSet res = null;
+		ResultSet res;
 		try
 		{
 			if (con == null)
@@ -368,14 +365,14 @@ public class JPSQLiteData
 			res = preparedStatement.executeQuery();
 			result = res.next();
 		}
-		catch (SQLException e){}
+		catch (SQLException ignored){}
 		return result;
 	}
 	
 	private boolean recordExists(String lastName, String firstName, int whichTable)
 	{
 		boolean result = false;
-		ResultSet res = null;
+		ResultSet res;
 		String table = "ATTENDANCEDATA";
 		try
 		{
@@ -390,7 +387,7 @@ public class JPSQLiteData
 			res = preparedStatement.executeQuery();
 			result = res.next();
 		}
-		catch (SQLException e){}
+		catch (SQLException ignored){}
 		return result;
 	}
 

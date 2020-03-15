@@ -39,10 +39,6 @@ public class Frame extends JFrame
 	{
 		switch(state)
 		{
-			case DEFAULT:
-				panel.removeAll();
-				panel = new JPDefault(base);
-				break;
 			case VIEWDATA:
 				panel.removeAll();
 				panel = new JPViewRecords(base);

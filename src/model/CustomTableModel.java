@@ -7,6 +7,7 @@ package model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 import adapter.JPController;
@@ -20,27 +21,17 @@ public class CustomTableModel extends DefaultTableModel
     
 	public boolean isCellEditable(int row, int column)
     {	return false;  }
-	
-	
-	public static CustomTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException 
-	{	
-	    Vector<String> columnNames = new Vector<String>();
-	    int columnCount = 5;
-	    for (int column = 0; column < columnCount; column++) 
-	    {	
-	    	if(value == 0)
-	    	{	
-	    		columnCount = 6;
-	    		columnNames.add(JPController.memberDataTableHeader[column]);	
-	    	}
-	    	else
-	    	{	columnNames.add(JPController.attendanceDataTableHeader[column]);	}
-	    }
 
-	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+	public static CustomTableModel buildTableModel(ResultSet memberRecords, int value) throws SQLException
+	{
+		var tableHeader = (value == 0 ? JPController.memberDataTableHeader : JPController.attendanceDataTableHeader);
+	    var columnCount = tableHeader.length;
+		Vector<String> columnNames = new Vector<>(Arrays.asList(tableHeader).subList(0, columnCount));
+
+	    Vector<Vector<Object>> data = new Vector<>();
 	    while (memberRecords.next()) 
 	    {
-	        Vector<Object> vector = new Vector<Object>();
+	        Vector<Object> vector = new Vector<>();
 	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) 
 	        {	 vector.add(memberRecords.getObject(columnIndex));	}
 	        data.add(vector);
